@@ -6,8 +6,7 @@ const userSchema = new Schema({
     email: { type: String, require: true, unique: true },
     password: {
         type: String,
-        required: true,
-        minLength: [8, 'Password must be at least 8 characters']
+        required: true
     },
     dateCreated: {
         type: Date,
