@@ -16,6 +16,7 @@ router.get('/test', (req, res) => {
 
 //POST api/users/register (Public)
 router.post('/register', (req, res) => {
+    //modify to check for permissions so user can be both company and customer
     db.User.findOne({ email: req.body.email }).then((user) => {
         if (user) {
             //already have this user, they cannot register again
