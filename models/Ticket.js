@@ -6,22 +6,25 @@ const ticketSchema = new Schema({
         type: String,
         maxLength: [20]
     },
-    assignedTo: [{type: String}],
-    company: {type: String},
-    product: {type: String},
-    picture: {type: String},
+    assignedTo: [{ type: String }],
+    company: { type: String },
+    product: { type: String },
+    picture: { type: String },
     description: {
         type: String,
         minLength: [30, 'Please include a detailed description'],
-        required: true,
+        required: true
     },
-    priority: {type: Number},
-    status: {type: String},
+    priority: { type: Number },
+    status: {
+        type: String,
+        default: 'Recieved'
+    },
     createdAt: {
         type: Date,
         default: new Date()
     },
-    createdBy: {type: String}
-})
+    createdBy: { type: String }
+});
 
-module.exports = mongoose.model('Ticket', ticketSchema)
+module.exports = mongoose.model('Ticket', ticketSchema);
