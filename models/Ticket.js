@@ -24,6 +24,7 @@ const ticketSchema = new Schema({
         type: Date,
         default: new Date()
     },
+    closedAt: { type: Date },
     createdBy: { type: String }
 });
 
