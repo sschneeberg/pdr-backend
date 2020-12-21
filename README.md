@@ -1,6 +1,7 @@
 # pdr-backend
 Pest Damage Report: MERN Stack Bug Tracker App (Backend Repository)
 
+```js
 const roleSchema = new roleSchema({
     admin: [{type: String}],
     dev: [{type: String}]
@@ -63,3 +64,4 @@ const ticketSchema = new ticketSchema({
     },
     createdBy: {type: String}
 })
+```
