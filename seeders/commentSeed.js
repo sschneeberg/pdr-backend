@@ -1,14 +1,16 @@
 const db = require('../models');
 
+//Run this seed file after grabbing a ticket id from a created ticket
+
 db.Comment.insertMany([
     {
-        ticket: '5fe0cfcd18afda00a9eed010',
+        ticket: '',
         comment: 'This is a seed comment for testing purposes',
-        commentBy: 'jsmith@company2.com'
+        commentBy: ''
     },
     {
-        ticket: '5fe0cfcd18afda00a9eed010',
+        ticket: '',
         comment: 'This is a seed user response for testing purposes',
-        commentBy: 'customer@email.com'
+        commentBy: ''
     }
 ]);
