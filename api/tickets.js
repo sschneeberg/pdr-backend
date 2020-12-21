@@ -48,7 +48,10 @@ router.get(
 // GET /api/tickets/:id (Private)  -- where id is user id
 router.get(
     '/:id',
-
+    function (req, res, next) {
+        passport.authenticate('jwt', { session: false });
+        isDev(req, res, next);
+    },
     (req, res) => {
         //will find tickets for both users and devs
         db.Ticket.find({ $or: [{ createdBy: req.params.id }, { assignedTo: req.params.id }] }).then((tickets) => {
