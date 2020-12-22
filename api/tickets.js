@@ -64,11 +64,18 @@ router.post('/:id/comments', passport.authenticate('jwt', { session: false }), (
     db.Comment.create({
         ticket: req.params.id,
         comment: req.body.comment,
-        commentBy: req.user.id
-    });
+        commentBy: req.user.id,
+    }).catch((err) => console.log(err));
 });
 
-// GET /api/tickets/:id (Private)  -- where id is ticket id
+router.delete('/comment/:id', passport.authenticate('jwt', { session: false }), (req, res) => {
+    db.Comment.remove({
+        id: req.params.id
+    }, {justOne: true}).then(()=> {
+        res.json({msg: "comment deleted"})
+    }).catch((err) => console.log(err));
+});
+
 router.get(
     '/:id',
     function (req, res, next) {
@@ -131,5 +138,7 @@ router.put('/:id', passport.authenticate('jwt', { session: false }), (req, res) 
         res.json({ msg: 'You do not have the permissions to access this route' });
     }
 });
+
+
 
 module.exports = router;
