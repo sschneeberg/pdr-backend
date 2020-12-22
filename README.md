@@ -7,7 +7,7 @@ ort: MERN Stack Bug Tracker App (Backend Repository)
 
 -   GET /api/tickets/companies (Public) -- Get list of all companies and a map to their products
 -   GET /api/tickets/:id/comments (Private) where id is a ticket id -- Get all comments related to a specific ticket
--   GET /api/tickets/:id (Private) where id is user id -- Get all tickets for a specific user
+-   GET /api/tickets/:id (Private) where id is ticket id -- Get all ticket info for a specific ticket
 -   GET api/users/current (Private) -- Get current user's login information and permissions
 -   GET api/dashboard (private) -- Get all information for customer or dev dashboard
 -   GET api/dashboard/admin-dashboard (private admin) -- Get all information for admin dashboard
