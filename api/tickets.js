@@ -45,6 +45,16 @@ router.get(
     }
 );
 
+// POST /api/tickets/:id/comments (Private) -- where id is the ticket id
+router.post('/:id/comments', passport.authenticate('jwt', { session: false }), (req, res) => {
+    db.Comment.create({
+        ticket: req.params.id,
+        comment: req.body.comment,
+        commentBy: req.user.id,
+    })
+})
+
+
 // GET /api/tickets/:id (Private)  -- where id is user id
 router.get(
     '/:id',
@@ -59,5 +69,17 @@ router.get(
         });
     }
 );
+
+// POST /api/tickets/:id (Private) --- where consumer creates a ticket
+router.post('/:id', passport.authenticate('jwt', { session: false }), (req,res) => {
+    db.Ticket.create({
+        title: req.body.title,
+        company: req.body.company,
+        product: req.body.product,
+        picture: req.body.picture,
+        description: req.body.description,
+        createdBy: req.user.id
+    })
+})
 
 module.exports = router;

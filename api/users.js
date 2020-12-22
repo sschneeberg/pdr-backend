@@ -47,6 +47,76 @@ router.post('/register', (req, res) => {
     });
 });
 
+//POST api/users/register-company (Public) (create a company)
+router.post('/register-company', (req, res) => {
+    //modify to check for permissions so user can be both company and customer
+    db.User.findOne({ email: req.body.email }).then((user) => {
+        if (user) {
+            //already have this user, they cannot register again
+            res.status(400).json({ msg: 'Email already exsists' });
+        } else {
+            const newUser = new db.User({
+                username: req.body.username,
+                email: req.body.email,
+                password: req.body.password,
+                permissions: req.body.permissions,
+                company: req.body.company
+            });
+            //check for company
+            db.Company.findOne({name: req.body.company}).then((company) => { 
+                if (company) {
+                    //if company found, compare keys
+                    if (req.body.key === company.key) {
+                        //update companies for roles of dev or admin
+                        if (newUser.permissions === 'dev') {
+                            db.Company.updateOne({
+                            name: company.name
+                        }, {
+                            $push: {
+                                "roles.dev": newUser.id
+                            }
+                        })
+                        } else {
+                            db.Company.updateOne({
+                                name: company.name
+                            }, {
+                                $push: {
+                                    "roles.admin": newUser.id
+                                }
+                            })
+                        }
+                    } else {
+                        res.status(400).json({msg: "Key doesn't match our records"})
+                    }
+                } else {
+                    // if company doesnt exist, make a new one
+                    const newCompany = new db.Company({
+                        name: req.body.company,
+                        products: req.body.products.split(","),
+                        roles: {admin: [newUser.id] },
+                    })
+                }
+            })
+            //salt and hash
+            bcrypt.genSalt(10, (error1, salt) => {
+                if (error1) throw Error;
+                bcrypt.hash(newUser.password, salt, (error2, hash) => {
+                    if (error2) throw Error;
+                    //change password to hash before saving new user
+                    newUser.password = hash;
+                    newUser
+                        .save()
+                        .then((createdUser) =>
+                            res.status(201).json({ user: createdUser })
+                        )
+                        .catch((err) => console.log(err));
+                });
+            });
+        }
+    });
+});
+
+
 //POST api/users/login (Public)
 router.post('/login', (req, res) => {
     const email = req.body.email;
