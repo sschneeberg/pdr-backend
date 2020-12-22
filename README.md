@@ -1,6 +1,7 @@
 # pdr-backend
 
-Pest Damage Report: MERN Stack Bug Tracker App (Backend Repository)
+Pest Damage Repcode .
+ort: MERN Stack Bug Tracker App (Backend Repository)
 
 ## ROUTES
 
@@ -17,6 +18,9 @@ Pest Damage Report: MERN Stack Bug Tracker App (Backend Repository)
 -   PUT /api/tickets/:id (Private) where id is ticket id -- update assignedTo and priority (admin only) or status (admin or dev)
 -   PUT /api/users/:id (Private) where id is user id -- update email, password, or username (any user)
 -   PUT /api/users/permissions/:id (Private) where id is user id -- update company member's permissions (admin only)
+
+-   DELETE /api/company/:id (Private) where id is user id -- delete company user belongs to and all it's users (admin only)
+-   DELETE /api/user/:id (Private) where id is user id -- delete user account
 
 ```js
 const roleSchema = new Schema({
