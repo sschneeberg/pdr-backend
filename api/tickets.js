@@ -29,6 +29,18 @@ router.get('/companies', (req, res) => {
     });
 });
 
+// POST /api/tickets/ (Public)
+router.post('/', passport.authenticate('jwt', { session: false }), (req, res) => {
+    db.Ticket.create({
+        title: req.body.title,
+        company: req.body.company,
+        product: req.body.product,
+        picture: req.body.picture,
+        description: req.body.description,
+        createdBy: req.body.id
+    });
+});
+
 //PRIVATE ROUTES FOR VIEWING BUG DETAILS
 
 // GET /api/tickets/:id/comments  (Private) -- where id is a ticket id
@@ -64,8 +76,6 @@ router.delete('/comment/:id', passport.authenticate('jwt', { session: false }), 
     }).catch((err) => console.log(err));
 });
 
-
-// GET /api/tickets/:id (Private)  -- where id is user id
 router.get(
     '/:id',
     function (req, res, next) {
@@ -74,25 +84,22 @@ router.get(
     },
     (req, res) => {
         //will find tickets for both users and devs
-        db.Ticket.find({ $or: [{ createdBy: req.params.id }, { assignedTo: req.params.id }] })
-            .then((tickets) => {
-                res.status(200).json({ tickets: tickets });
+        db.Ticket.find({ _id: req.params.id })
+            .then((ticket) => {
+                //find the assocaited usernames
+                db.User.findOne({ _id: ticket.createdBy })
+                    .then((creator) => {
+                        db.User.findOne({ _id: ticket.assignedTo })
+                            .then((dev) => {
+                                res.status(200).json({ ticket: ticket, createdBy: creator, assignedTo: dev });
+                            })
+                            .catch((err) => console.log(err));
+                    })
+                    .catch((err) => console.log(err));
             })
             .catch((err) => console.log(err));
     }
 );
-
-// POST /api/tickets/ (Private) --- where id is user id
-router.post('/', passport.authenticate('jwt', { session: false }), (req, res) => {
-    db.Ticket.create({
-        title: req.body.title,
-        company: req.body.company,
-        product: req.body.product,
-        picture: req.body.picture,
-        description: req.body.description,
-        createdBy: req.body.id
-    }).catch((err) => console.log(err));
-});
 
 // PUT /api/tickets/:id (Private) -- where id is ticket id
 router.put('/:id', passport.authenticate('jwt', { session: false }), (req, res) => {
