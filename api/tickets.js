@@ -54,6 +54,13 @@ router.post('/:id/comments', passport.authenticate('jwt', { session: false }), (
     })
 })
 
+router.delete('/comment/:id', passport.authenticate('jwt', { session: false }), (req, res) => {
+    db.Comment.remove({
+        id: req.params.id
+    }, {justOne: true}).then(()=> {
+        res.json({msg: "comment deleted"})
+    })
+})
 
 // GET /api/tickets/:id (Private)  -- where id is user id
 router.get(
@@ -81,6 +88,7 @@ router.post('/:id', passport.authenticate('jwt', { session: false }), (req,res) 
         createdBy: req.user.id
     })
 })
+
 
 
 module.exports = router;
