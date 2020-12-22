@@ -106,31 +106,6 @@ router.get(
     }
 );
 
-//GET api/user/admin-dashboard (private admin)
-router.get('/admin-dashboard', function(req, res, next) {
-    passport.authenticate('jwt', { session: false });
-    isAdmin(req,res,next);},
-    (req, res) => {
-        db.Company.findOne({
-            name: req.user.company
-        }).then(company => {
-            db.Ticket.find({
-                company: company.name
-            }).then(tickets => {
-                let ticketInfo = [];
-                ticketInfo.push(tickets)
-                res.json({
-                    name: company.name,
-                    products: company.products,
-                    roles: company.roles,
-                    email: req.user.email,
-                    key: company.key,
-                    company: req.user.company,
-                    ticketInfo
-                })
-            })
-        })
-    })
 
 
 
