@@ -3,7 +3,6 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const passport = require('passport');
-require('./config/passport')(passport);
 
 const app = express();
 const port = process.env.PORT || 8000;
@@ -12,6 +11,8 @@ const port = process.env.PORT || 8000;
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(cors({ origin: '*' }));
+app.use(passport.initialize());
+require('./config/passport')(passport);
 
 //routes
 app.get('/', (req, res) => {

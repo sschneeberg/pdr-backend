@@ -84,19 +84,78 @@ router.post('/login', (req, res) => {
     });
 });
 
+// PUT /api/users/:id (Private) -- where id is user id
+router.put('/:id', passport.authenticate('jwt', { session: false }), (req, res) => {
+    //let any logged in user change their password, email or username
+    if (req.body.username) {
+        db.User.updateOne({ _id: req.body.id }, { $set: { username: req.body.username } })
+            .then(() => res.json({ msg: 'updated' }))
+            .catch((err) => console.log(err));
+    }
+    if (req.body.password) {
+        bcrypt.genSalt(10, (error1, salt) => {
+            if (error1) throw Error;
+            bcrypt.hash(req.body.password, salt, (error2, hash) => {
+                if (error2) throw Error;
+                //change password to hash before saving updated password
+                db.User.updateOne({ _id: req.body.id }, { $set: { username: hash } })
+                    .then(() => res.json({ msg: 'updated' }))
+                    .catch((err) => console.log(err));
+            });
+        });
+    }
+    if (req.body.email) {
+        db.User.updateOne({ _id: req.body.id }, { $set: { username: req.body.username } })
+            .then(() => res.json({ msg: 'updated' }))
+            .catch((err) => console.log(err));
+    }
+});
+
+// PUT /api/users/permissions/:id -- where id is user id
+router.put(
+    '/permissions/:id',
+    function (req, res, next) {
+        passport.authenticate('jwt', { session: false });
+        isAdmin(req, res, next);
+    },
+    (req, res) => {
+        if (req.body.permissions === 'admin') {
+            db.User.updateOne({ _id: req.params.id }, { $set: { permissions: req.body.permissions } })
+                .then(() => {
+                    //update company as well
+                    db.Company.updateOne(
+                        { name: req.user.company },
+                        { $push: { 'roles.dev': newUser.id } },
+                        { $pull: { 'roles.admin': req.params.id } }
+                    );
+                })
+                .then(() => res.json({ msg: 'updated' }))
+                .catch((err) => console.log(err));
+        } else if (req.body.permissions === 'dev') {
+            db.User.updateOne({ _id: req.params.id }, { $set: { permissions: req.body.permissions } })
+                .then(() => {
+                    //update company as well
+                    db.Company.updateOne(
+                        { name: req.user.company },
+                        { $pull: { 'roles.dev': newUser.id } },
+                        { $push: { 'roles.admin': req.params.id } }
+                    );
+                })
+                .then(() => res.json({ msg: 'updated' }))
+                .catch((err) => console.log(err));
+        }
+    }
+);
+
 //GET api/users/current (Private)
-// router.get(
-//     '/current',
-//     passport.authenticate('jwt', { session: false }),
-//     (req, res) => {
-//         //passport will check for jwt token for us, if avialable we can access the route
-//         res.json({
-//             id: req.user._id,
-//             username: req.user.username,
-//             email: req.user.email,
-//             permissions: req.user.permissions
-//         });
-//     }
-// );
+router.get('/current', passport.authenticate('jwt', { session: false }), (req, res) => {
+    //passport will check for jwt token for us, if avialable we can access the route
+    res.json({
+        id: req.user._id,
+        username: req.user.username,
+        email: req.user.email,
+        permissions: req.user.permissions
+    });
+});
 
 module.exports = router;

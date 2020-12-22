@@ -14,6 +14,10 @@ Pest Damage Report: MERN Stack Bug Tracker App (Backend Repository)
 -   POST api/users/login (Public)
 -   POST api/users/register (Public)
 
+-   PUT /api/tickets/:id (Private) where id is ticket id -- update assignedTo and priority (admin only) or status (admin or dev)
+-   PUT /api/users/:id (Private) where id is user id -- update email, password, or username (any user)
+-   PUT /api/users/permissions/:id (Private) where id is user id -- update company member's permissions (admin only)
+
 ```js
 const roleSchema = new roleSchema({
     admin: [{ type: String }],
