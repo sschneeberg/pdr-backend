@@ -23,7 +23,7 @@ ort: MERN Stack Bug Tracker App (Backend Repository)
 
 -   DELETE /api/company/:id (Private) where id is user id -- delete company user belongs to and all it's users (admin only)
 -   DELETE /api/user/:id (Private) where id is user id -- delete user account
-
+-   DELETE /api/tickets/:id (Private) Deletes the individual ticket by id
 ```js
 const roleSchema = new Schema({
     admin: [{ type: String }],
