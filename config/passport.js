@@ -10,10 +10,11 @@ const db = require('../models');
 const options = {};
 options.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
 options.secretOrKey = process.env.JWT_SECRET;
+options.passReqToCallback = true;
 
 module.exports = (passport) => {
     passport.use(
-        new JwtStrategy(options, (jwt_payload, done) => {
+        new JwtStrategy(options, (req, jwt_payload, done) => {
             //note: jwt_payload is an object that contains the decoded JWT payload
             //note: done is a callback that takes an error as a first argument then information to pass up
             //find user from id in payload, check if in db
@@ -21,6 +22,7 @@ module.exports = (passport) => {
                 .then((user) => {
                     if (user) {
                         //if user, return null for error and return user
+                        req.user = user;
                         return done(null, user);
                     } else {
                         //no user found in database

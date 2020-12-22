@@ -15,7 +15,7 @@ router.get('/test', (req, res) => {
 });
 
 //GET api/dashboard (private)
-router.get('/', (req, res) => {
+router.get('/', passport.authenticate('jwt', { session: false }), (req, res) => {
     console.log(req);
     if (req.user.permissions !== 'admin') {
         db.Ticket.find({
