@@ -50,13 +50,11 @@ router.post('/login', (req, res) => {
     const email = req.body.email;
     const password = req.body.password;
     db.User.findOne({ email }).then((user) => {
-        console.log(user);
         if (!user) {
             res.status(400).json({ msg: 'user not found' });
         } else {
             //if user found, check password match
             bcrypt.compare(password, user.password).then((isMatch) => {
-                console.log(isMatch);
                 if (isMatch) {
                     //send webtoken (create token payload)
                     //send up user information and token
