@@ -19,7 +19,7 @@ Pest Damage Report: MERN Stack Bug Tracker App (Backend Repository)
 -   PUT /api/users/permissions/:id (Private) where id is user id -- update company member's permissions (admin only)
 
 ```js
-const roleSchema = new roleSchema({
+const roleSchema = new Schema({
     admin: [{ type: String }],
     dev: [{ type: String }]
 });
@@ -29,7 +29,7 @@ const roleSchema = new roleSchema({
 // register company checks for existing company and generates and sends a key
 // by default they should be an admin under that "register a compay" email provided
 // UUID for companyKey to create unique key for that company
-const companySchema = new companySchema({
+const companySchema = new Schema({
     name: { type: String, unique: true },
     products: [{ type: String }],
     roles: [roleSchema],
@@ -38,7 +38,7 @@ const companySchema = new companySchema({
 
 // check username in company roles before creation
 // permissions dropdown options [consumer, dev, admin]
-const userSchema = new userSchema({
+const userSchema = new Schema({
     username: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: {
@@ -59,7 +59,7 @@ const userSchema = new userSchema({
 // dropdown is a string of priorities FOR ADMIN (Low, Med, High, Critical), but its a number to parse on backend
 // product and company are dropdown (multiform)
 // picutre and desc is multiform
-const ticketSchema = new ticketSchema({
+const ticketSchema = new Schema({
     title: {
         type: String,
         maxLength: [20]
