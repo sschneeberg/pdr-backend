@@ -61,4 +61,38 @@ router.get(
     }
 );
 
+// PUT /api/tickets/:id (Private) -- where id is ticket id
+router.put('/:id', passport.authenticate('jwt', { session: false }), (req, res) => {
+    if (req.user.permissions === 'admin') {
+        //if admin allow assignTo and proirity edits
+        db.Ticket.update(
+            { _id: req.params.id },
+            {
+                $set: {
+                    priority: req.body.priority,
+                    asignedTo: req.body.assignedTo
+                }
+            }
+        );
+    } else if (req.body.permissions === 'dev' || req.body.permissions === 'admin') {
+        //if dev or admin allow status change -- add closeAt when closed
+        let closedAt = '';
+        if (req.body.status === 'Closed') {
+            closedAt = new Date();
+        }
+        db.Ticket.update(
+            { _id: req.params.id },
+            {
+                $set: {
+                    status: req.body.status,
+                    closedAt: closedAt
+                }
+            }
+        );
+    } else {
+        //if not dev or admin give message not allowed here
+        res.json({ msg: 'You do not have the permissions to access this route' });
+    }
+});
+
 module.exports = router;
