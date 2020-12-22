@@ -3,6 +3,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const passport = require('passport');
+const isAdmin = require('../middleware/isAdmin')
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -99,10 +100,13 @@ router.get(
         res.json({
             id: req.user._id,
             username: req.user.username,
-            email: req.user.email
-            //other info if needed
+            email: req.user.email,
+            permissions: req.user.permissions
         });
     }
 );
+
+
+
 
 module.exports = router;
