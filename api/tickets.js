@@ -39,9 +39,11 @@ router.get(
         isDev(req, res, next);
     },
     (req, res) => {
-        db.Comment.find({ ticket: req.params.id }).then((comments) => {
-            res.status(200).json({ comments: comments });
-        });
+        db.Comment.find({ ticket: req.params.id })
+            .then((comments) => {
+                res.status(200).json({ comments: comments });
+            })
+            .catch((err) => console.log(err));
     }
 );
 
@@ -64,13 +66,16 @@ router.get(
     },
     (req, res) => {
         //will find tickets for both users and devs
-        db.Ticket.find({ $or: [{ createdBy: req.params.id }, { assignedTo: req.params.id }] }).then((tickets) => {
-            res.status(200).json({ tickets: tickets });
-        });
+        db.Ticket.find({ $or: [{ createdBy: req.params.id }, { assignedTo: req.params.id }] })
+            .then((tickets) => {
+                res.status(200).json({ tickets: tickets });
+            })
+            .catch((err) => console.log(err));
     }
 );
 
-// POST /api/tickets/:id (Private) --- where consumer creates a ticket
+
+// POST /api/tickets/:id (Private) --- where id is user id
 router.post('/:id', passport.authenticate('jwt', { session: false }), (req,res) => {
     db.Ticket.create({
         title: req.body.title,
@@ -81,5 +86,45 @@ router.post('/:id', passport.authenticate('jwt', { session: false }), (req,res) 
         createdBy: req.user.id
     })
 })
+
+
+// PUT /api/tickets/:id (Private) -- where id is ticket id
+router.put('/:id', passport.authenticate('jwt', { session: false }), (req, res) => {
+    if (req.user.permissions === 'admin') {
+        //if admin allow assignTo and proirity edits
+        db.Ticket.updateOne(
+            { _id: req.params.id },
+            {
+                $set: {
+                    priority: req.body.priority,
+                    asignedTo: req.body.assignedTo
+                }
+            }
+        )
+            .then(() => res.json({ msg: 'updated' }))
+            .catch((err) => console.log(err));
+    } else if (req.body.permissions === 'dev' || req.body.permissions === 'admin') {
+        //if dev or admin allow status change -- add closeAt when closed
+        let closedAt = '';
+        if (req.body.status === 'Closed') {
+            closedAt = new Date();
+        }
+        db.Ticket.updateOne(
+            { _id: req.params.id },
+            {
+                $set: {
+                    status: req.body.status,
+                    closedAt: closedAt
+                }
+            }
+        )
+            .then(() => res.json({ msg: 'updated' }))
+            .catch((err) => console.log(err));
+    } else {
+        //if not dev or admin give message not allowed here
+        res.json({ msg: 'You do not have the permissions to access this route' });
+    }
+});
+
 
 module.exports = router;
