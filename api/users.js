@@ -85,14 +85,18 @@ router.post('/login', (req, res) => {
 });
 
 //GET api/users/current (Private)
-router.get('/current', passport.authenticate('jwt', { session: false }), (req, res) => {
-    //passport will check for jwt token for us, if avialable we can access the route
-    res.json({
-        id: req.user._id,
-        username: req.user.username,
-        email: req.user.email,
-        permissions: req.user.permissions
-    });
-});
+// router.get(
+//     '/current',
+//     passport.authenticate('jwt', { session: false }),
+//     (req, res) => {
+//         //passport will check for jwt token for us, if avialable we can access the route
+//         res.json({
+//             id: req.user._id,
+//             username: req.user.username,
+//             email: req.user.email,
+//             permissions: req.user.permissions
+//         });
+//     }
+// );
 
 module.exports = router;
