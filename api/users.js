@@ -3,7 +3,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const passport = require('passport');
-const isAdmin = require('../middleware/isAdmin')
+const isAdmin = require('../middleware/isAdmin');
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -37,9 +37,7 @@ router.post('/register', (req, res) => {
                     newUser.password = hash;
                     newUser
                         .save()
-                        .then((createdUser) =>
-                            res.status(201).json({ user: createdUser })
-                        )
+                        .then((createdUser) => res.status(201).json({ user: createdUser }))
                         .catch((err) => console.log(err));
                 });
             });
@@ -65,22 +63,17 @@ router.post('/login', (req, res) => {
                     const payload = {
                         email: user.email,
                         id: user._id,
-                        username: user.username
-                        //add any other info you need on the front end here
+                        username: user.username,
+                        permissions: user.permissions
                     };
                     //sign token and send
-                    jwt.sign(
-                        payload,
-                        JWT_SECRET,
-                        { expiresIn: '1h' },
-                        (error, token) => {
-                            if (error) throw Error;
-                            res.json({
-                                success: true,
-                                token: `Bearer ${token}`
-                            });
-                        }
-                    );
+                    jwt.sign(payload, JWT_SECRET, { expiresIn: '1h' }, (error, token) => {
+                        if (error) throw Error;
+                        res.json({
+                            success: true,
+                            token: `Bearer ${token}`
+                        });
+                    });
                 } else {
                     res.status(400).json({
                         msg: 'Login information incorrect'
@@ -92,21 +85,14 @@ router.post('/login', (req, res) => {
 });
 
 //GET api/users/current (Private)
-router.get(
-    '/current',
-    passport.authenticate('jwt', { session: false }),
-    (req, res) => {
-        //passport will check for jwt token for us, if avialable we can access the route
-        res.json({
-            id: req.user._id,
-            username: req.user.username,
-            email: req.user.email,
-            permissions: req.user.permissions
-        });
-    }
-);
-
-
-
+router.get('/current', passport.authenticate('jwt', { session: false }), (req, res) => {
+    //passport will check for jwt token for us, if avialable we can access the route
+    res.json({
+        id: req.user._id,
+        username: req.user.username,
+        email: req.user.email,
+        permissions: req.user.permissions
+    });
+});
 
 module.exports = router;

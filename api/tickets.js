@@ -51,6 +51,7 @@ router.get(
     function (req, res, next) {
         passport.authenticate('jwt', { session: false });
         isDev(req, res, next);
+        // depending on isDev next();
     },
     (req, res) => {
         //will find tickets for both users and devs

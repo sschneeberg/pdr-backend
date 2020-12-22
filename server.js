@@ -11,17 +11,16 @@ const port = process.env.PORT || 8000;
 //middleware
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
-app.use(cors());
+app.use(cors({ origin: '*' }));
 
 //routes
 app.get('/', (req, res) => {
     res.status(200).json({ msg: 'Connected to backend' });
 });
 
-
 //controllers
 app.use('/api/users', require('./api/users'));
 app.use('/api/tickets', require('./api/tickets'));
-app.use('/api/dashboard', require('./api/dashboard'))
+app.use('/api/dashboard', require('./api/dashboard'));
 
 app.listen(port, console.log(`listening on port ${port}`));
