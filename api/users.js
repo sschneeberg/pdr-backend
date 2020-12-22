@@ -3,6 +3,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const passport = require('passport');
+const isAdmin = require('../middleware/isAdmin')
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -99,10 +100,38 @@ router.get(
         res.json({
             id: req.user._id,
             username: req.user.username,
-            email: req.user.email
-            //other info if needed
+            email: req.user.email,
+            permissions: req.user.permissions
         });
     }
 );
+
+//GET api/user/admin-dashboard (private admin)
+router.get('/admin-dashboard', function(req, res, next) {
+    passport.authenticate('jwt', { session: false });
+    isAdmin(req,res,next);},
+    (req, res) => {
+        db.Company.findOne({
+            name: req.user.company
+        }).then(company => {
+            db.Ticket.find({
+                company: company.name
+            }).then(tickets => {
+                let ticketInfo = [];
+                ticketInfo.push(tickets)
+                res.json({
+                    name: company.name,
+                    products: company.products,
+                    roles: company.roles,
+                    email: req.user.email,
+                    key: company.key,
+                    company: req.user.company,
+                    ticketInfo
+                })
+            })
+        })
+    })
+
+
 
 module.exports = router;

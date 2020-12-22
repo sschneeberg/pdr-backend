@@ -18,6 +18,7 @@ app.get('/', (req, res) => {
     res.status(200).json({ msg: 'Connected to backend' });
 });
 
+app.use('/api/dashboard', require('./api/dashboard'))
 app.use('/api/users', require('./api/users'));
 
 app.listen(port, console.log(`listening on port ${port}`));
