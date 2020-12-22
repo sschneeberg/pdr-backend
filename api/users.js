@@ -156,4 +156,11 @@ router.get('/current', passport.authenticate('jwt', { session: false }), (req, r
     });
 });
 
+// DELETE api/users/:id (private) -- where id is user id
+router.delete('/:id', passport.authenticate('jwt', { session: false }), (req, res) => {
+    db.User.remove({ _id: req.params.id }, { justOne: true }).then(() => {
+        res.json({ msg: 'Account Deleted' });
+    });
+});
+
 module.exports = router;
