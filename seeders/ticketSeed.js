@@ -1,21 +1,23 @@
 const db = require('../models');
 
+//Run this file after grabbing ids from created users
+
 db.Ticket.insertMany([
     {
         title: 'Test Bug',
         company: 'Test Company 1',
         product: 'website 1',
         description: 'This is a seed ticket created for testing purposes',
-        createdBy: 'customer@email.com'
+        createdBy: ''
     },
     {
         title: 'Another Bug',
         company: 'Test Company 2',
         product: 'Desktop App',
         description: 'This is a seed bug created for testing purposes',
-        createdBy: 'customer@email.com',
-        assignedTo: 'jsmith@company2.com',
+        createdBy: '',
+        assignedTo: '',
         priority: '3',
-        status: 'Under Review'
+        status: 'In Review'
     }
 ]);

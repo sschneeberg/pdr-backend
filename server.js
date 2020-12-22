@@ -18,6 +18,8 @@ app.get('/', (req, res) => {
     res.status(200).json({ msg: 'Connected to backend' });
 });
 
+//controllers
 app.use('/api/users', require('./api/users'));
+app.use('/api/tickets', require('./api/tickets'));
 
 app.listen(port, console.log(`listening on port ${port}`));
