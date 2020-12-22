@@ -47,6 +47,16 @@ router.get(
     }
 );
 
+// POST /api/tickets/:id/comments (Private) -- where id is the ticket id
+router.post('/:id/comments', passport.authenticate('jwt', { session: false }), (req, res) => {
+    db.Comment.create({
+        ticket: req.params.id,
+        comment: req.body.comment,
+        commentBy: req.user.id,
+    })
+})
+
+
 // GET /api/tickets/:id (Private)  -- where id is user id
 router.get(
     '/:id',
@@ -63,6 +73,20 @@ router.get(
             .catch((err) => console.log(err));
     }
 );
+
+
+// POST /api/tickets/:id (Private) --- where id is user id
+router.post('/:id', passport.authenticate('jwt', { session: false }), (req,res) => {
+    db.Ticket.create({
+        title: req.body.title,
+        company: req.body.company,
+        product: req.body.product,
+        picture: req.body.picture,
+        description: req.body.description,
+        createdBy: req.user.id
+    })
+})
+
 
 // PUT /api/tickets/:id (Private) -- where id is ticket id
 router.put('/:id', passport.authenticate('jwt', { session: false }), (req, res) => {
@@ -101,5 +125,6 @@ router.put('/:id', passport.authenticate('jwt', { session: false }), (req, res) 
         res.json({ msg: 'You do not have the permissions to access this route' });
     }
 });
+
 
 module.exports = router;
