@@ -78,7 +78,8 @@ router.get(
 );
 
 // POST /api/tickets/:id (Private) --- where consumer creates a ticket
-router.post('/:id', passport.authenticate('jwt', { session: false }), (req,res) => {
+router.post('/:id', (req,res) => {
+   
     db.Ticket.create({
         title: req.body.title,
         company: req.body.company,
