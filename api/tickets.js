@@ -74,13 +74,9 @@ router.post('/:id/comments', passport.authenticate('jwt', { session: false }), (
         .catch((err) => console.log(err));
 });
 
-router.delete('/comment/:id', passport.authenticate('jwt', { session: false }), (req, res) => {
-    db.Comment.remove(
-        {
-            id: req.params.id
-        },
-        { justOne: true }
-    )
+// DELETE /api/tickets/:id/comments (Private) -- where id is comment id
+router.delete('/:id/comments', passport.authenticate('jwt', { session: false }), (req, res) => {
+    db.Comment.remove({ _id: req.params.id }, { justOne: true })
         .then(() => {
             res.json({ msg: 'comment deleted' });
         })
