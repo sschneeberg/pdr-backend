@@ -169,7 +169,7 @@ router.post('/login', (req, res) => {
                 } else {
                     res.status(400).json({
                         msg: 'Login information incorrect'
-                    });
+                    }).catch((err) => res.json({msg: err}));
                 }
             });
         }
@@ -247,14 +247,14 @@ router.get('/current', passport.authenticate('jwt', { session: false }), (req, r
         username: req.user.username,
         email: req.user.email,
         permissions: req.user.permissions
-    });
+    }).catch((err) => res.json({msg: err}));
 });
 
 // DELETE api/users/:id (private) -- where id is user id
 router.delete('/:id', passport.authenticate('jwt', { session: false }), (req, res) => {
     db.User.remove({ _id: req.params.id }, { justOne: true }).then(() => {
         res.json({ msg: 'Account Deleted' });
-    });
+    }).catch((err) => res.json({msg: err}));
 });
 
 module.exports = router;
