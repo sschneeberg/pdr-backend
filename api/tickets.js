@@ -50,13 +50,13 @@ router.post('/', (req, res) => {
 //PRIVATE ROUTES FOR VIEWING BUG DETAILS
 
 // GET /api/tickets/:id/comments  (Private) -- where id is a ticket id
-router
-    .get('/:id/comments', passport.authenticate('jwt', { session: false }), (req, res) => {
-        db.Comment.find({ ticket: req.params.id }).then((comments) => {
+router.get('/:id/comments', passport.authenticate('jwt', { session: false }), (req, res) => {
+    db.Comment.find({ ticket: req.params.id })
+        .then((comments) => {
             res.status(200).json({ comments: comments });
-        });
-    })
-    .catch((err) => res.json({ msg: err }));
+        })
+        .catch((err) => res.json({ msg: err }));
+});
 
 // POST /api/tickets/:id/comments (Private) -- where id is the ticket id
 router.post('/:id/comments', passport.authenticate('jwt', { session: false }), (req, res) => {
