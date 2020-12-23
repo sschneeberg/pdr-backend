@@ -5,26 +5,24 @@ ort: MERN Stack Bug Tracker App (Backend Repository)
 
 ## ROUTES
 
--   GET /api/tickets/companies (Public) -- Get list of all companies and a map to their products
--   GET /api/tickets/:id/comments (Private) where id is a ticket id -- Get all comments related to a specific ticket
--   GET /api/tickets/:id (Private) where id is ticket id -- Get all ticket info for a specific ticket
--   GET api/users/current (Private) -- Get current user's login information and permissions
--   GET api/dashboard (private) -- Get all information for customer or dev dashboard
--   GET api/dashboard/admin-dashboard (private admin) -- Get all information for admin dashboard
-
--   POST api/users/login (Public) -- login
--   POST api/users/register (Public) -- create customer user account
--   POST api/users/register-company (Public) -- create an admin or dev account with a new or existing company
--   POST api/tickets (Public) -- create tickets
--   POST api/tickets/:id/comments (Private) where id is ticket id -- create comment on ticket
-
--   PUT /api/tickets/:id (Private) where id is ticket id -- update assignedTo and priority (admin only) or status (admin or dev)
--   PUT /api/users/:id (Private) where id is user id -- update email, password, or username (any user)
--   PUT /api/users/permissions/:id (Private) where id is user id -- update company member's permissions (admin only)
-
--   DELETE /api/company (Private) -- delete company user belongs to and all it's users (admin only)
--   DELETE /api/user/:id (Private) where id is user id -- delete user account
--   DELETE /api/tickets/:id/comments (Private) where id is comment id-- deletes comment by id (admin only)
+| Method | Route                         | Access                 | Description                                                                       |
+| ------ | ----------------------------- | ---------------------- | --------------------------------------------------------------------------------- |
+| GET    | /api/tickets/companies        | Public                 | Get list of all companies and a map to their products                             |
+| GET    | /api/tickets/:id/comments     | Private                | Get all comments related to a specific ticket (:id is a Ticket id)                |
+| GET    | /api/tickets/:id              | Private                | Get all ticket info for a specific ticket (:id is a Ticket id)                    |
+| GET    | api/dashboard                 | Private                | Get all information for customer or dev dashboard                                 |
+| GET    | api/dashboard/admin-dashboard | Private (Admin Only)   | Get all information for admin dashboard                                           |
+| POST   | api/users/login               | Public                 | Login a user                                                                      |
+| POST   | api/users/register            | Public                 | Create customer user account                                                      |
+| POST   | api/users/register-company    | Public                 | Create an admin or dev account with a new or existing company                     |
+| POST   | api/tickets                   | Public                 | Create tickets                                                                    |
+| POST   | api/tickets/:id/comments      | Private                | Create comment on ticket (:id is a Ticket id)                                     |
+| PUT    | /api/tickets/:id              | Private (Admin or Dev) | Update assignedTo and priority (Admin) or status (Admin/Dev) (:id is a Ticket id) |
+| PUT    | /api/users/:id                | Private                | Update user email, password, or username (:id is a User id)                       |
+| PUT    | /api/users/permissions/:id    | Private (Admin only)   | Update company member's permissions                                               |
+| DELETE | /api/company                  | Private (Admin only)   | Delete the company user belongs to and all it's users                             |
+| DELETE | /api/users/:id                | Private                | Delete user account (:id is a User id)                                            |
+| DELETE | /api/tickets/:id/comments     | Private (Admin only)   | Deletes comment by id                                                             |
 
 ```js
 const roleSchema = new Schema({
