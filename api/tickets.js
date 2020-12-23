@@ -70,13 +70,20 @@ router.post('/:id/comments', passport.authenticate('jwt', { session: false }), (
 });
 
 // DELETE /api/tickets/:id/comments (Private) -- where id is comment id
-router.delete('/:id/comments', passport.authenticate('jwt', { session: false }), (req, res) => {
-    db.Comment.remove({ _id: req.params.id }, { justOne: true })
-        .then(() => {
-            res.json({ msg: 'comment deleted' });
-        })
-        .catch((err) => res.json({ msg: err }));
-});
+router.delete(
+    '/:id/comments',
+    function (req, res, next) {
+        passport.authenticate('jwt', { session: false });
+        isAdmin(req, res, next);
+    },
+    (req, res) => {
+        db.Comment.remove({ _id: req.params.id }, { justOne: true })
+            .then(() => {
+                res.json({ msg: 'comment deleted' });
+            })
+            .catch((err) => res.json({ msg: err }));
+    }
+);
 
 // GET /api/ticket/:id (Private) -- where id is ticekt id
 router.get(
