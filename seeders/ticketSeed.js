@@ -18,6 +18,6 @@ db.Ticket.insertMany([
         createdBy: '',
         assignedTo: '',
         priority: '3',
-        status: 'In Review'
+        status: '2'
     }
 ]);

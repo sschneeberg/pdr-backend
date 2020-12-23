@@ -24,7 +24,6 @@ ort: MERN Stack Bug Tracker App (Backend Repository)
 | DELETE | /api/users/:id                | Private                | Delete user account (:id is a User id)                                            |
 | DELETE | /api/tickets/:id/comments     | Private (Admin only)   | Deletes comment by id                                                             |
 
-
 ## Schema's Used
 
 This schema is embedded with assigned admin and dev roles for the comapny. Super simple, right?!
@@ -39,7 +38,7 @@ const companySchema = new Schema({
     name: { type: String, unique: true },
     products: [{ type: String }],
     roles: [roleSchema],
-    companyKey: { type: String }
+    companyKey: { type: String, default: uuidv4(); }
 });
 ```
 
@@ -59,7 +58,7 @@ const userSchema = new Schema({
 });
 ```
 
-Here is the ticket Schema. The only thing required is a description of the bug, however, half the ticket is updated by an admin or dev later on in the reporting process. 
+Here is the ticket Schema. The only thing required is a description of the bug, however, half the ticket is updated by an admin or dev later on in the reporting process. Priority is stored at a number but corresponds to Low, Medium, High, and Critical on the front end. Similarly, Status is a number that corresponds to New, In Progress, and Closed.
 
 ```js
 const ticketSchema = new Schema({
@@ -77,7 +76,7 @@ const ticketSchema = new Schema({
         required: true
     },
     priority: { type: Number },
-    status: { type: String },
+    status: { type: Number, default: 1 },
     createdAt: {
         type: Date,
         default: new Date()
@@ -85,16 +84,17 @@ const ticketSchema = new Schema({
     createdBy: { type: String }
 });
 ```
-Lastly, the comment Schema! These comments are left on tickets for communication about buggy details between dev, admin, and consumers that are tracking their reported bugs. Fun! 
+
+Lastly, the comment Schema! These comments are left on tickets for communication about buggy details between dev, admin, and consumers that are tracking their reported bugs. Fun!
 
 ```js
 const commentSchema = new Schema({
-    ticket: {type: String},
-    comment: {type: String},
-    commentBy: {type: String},
+    ticket: { type: String },
+    comment: { type: String },
+    commentBy: { type: String },
     createdAt: {
         type: Date,
         default: new Date()
-    },
-})
+    }
+});
 ```

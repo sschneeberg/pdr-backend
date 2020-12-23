@@ -118,7 +118,7 @@ router.put('/:id', passport.authenticate('jwt', { session: false }), (req, res) 
         db.Ticket.updateOne(
             { _id: req.params.id },
             {
-                $set: { priority: req.body.priority },
+                $set: { priority: parseInt(req.body.priority) },
                 $push: { assignedTo: req.body.assignedTo }
             }
         )
@@ -127,14 +127,14 @@ router.put('/:id', passport.authenticate('jwt', { session: false }), (req, res) 
     } else if (req.body.permissions === 'dev' || req.body.permissions === 'admin') {
         //if dev or admin allow status change -- add closeAt when closed
         let closedDate = '';
-        if (req.body.status === 'Closed') {
+        if (req.body.status === 3) {
             closedDate = new Date();
         }
         db.Ticket.updateOne(
             { _id: req.params.id },
             {
                 $set: {
-                    status: req.body.status,
+                    status: parseInt(req.body.status),
                     closedAt: closedDate
                 }
             }

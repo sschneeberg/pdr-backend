@@ -17,8 +17,8 @@ const ticketSchema = new Schema({
     },
     priority: { type: Number },
     status: {
-        type: String,
-        default: 'Recieved'
+        type: Number,
+        default: 1
     },
     createdAt: {
         type: Date,
