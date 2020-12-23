@@ -231,8 +231,32 @@ router.get('/current', passport.authenticate('jwt', { session: false }), (req, r
 
 // DELETE api/users/:id (private) -- where id is user id
 router.delete('/:id', passport.authenticate('jwt', { session: false }), (req, res) => {
-    db.User.remove({ _id: req.params.id }, { justOne: true }).then(() => {
-        res.json({ msg: 'Account Deleted' });
+    db.User.findOne({ _id: req.params.id }).then((user) => {
+        if (user.company) {
+            //company member, remove from roles
+            if (user.permissions === 'dev') {
+                db.Company.findOneAndUpdate({ name: user.company }, { $pull: { 'roles.dev': req.params.id } }).then(
+                    () => {
+                        db.User.remove({ _id: req.params.id }, { justOne: true }).then(() => {
+                            res.json({ msg: 'Account deleted' });
+                        });
+                    }
+                );
+            } else if (user.permissions === 'admin') {
+                db.Company.findOneAndUpdate({ name: user.company }, { $pull: { 'roles.admin': req.params.id } }).then(
+                    () => {
+                        db.User.remove({ _id: req.params.id }, { justOne: true }).then(() => {
+                            res.json({ msg: 'Account deleted' });
+                        });
+                    }
+                );
+            }
+        } else {
+            //just a regular user
+            db.User.remove({ _id: req.params.id }, { justOne: true }).then(() => {
+                res.json({ msg: 'Account deleted' });
+            });
+        }
     });
 });
 
