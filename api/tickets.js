@@ -83,6 +83,7 @@ router.delete('/:id/comments', passport.authenticate('jwt', { session: false }),
         .catch((err) => console.log(err));
 });
 
+// GET /api/ticket/:id (Private) -- where id is ticekt id
 router.get(
     '/:id',
     function (req, res, next) {
@@ -91,7 +92,7 @@ router.get(
     },
     (req, res) => {
         //will find tickets for both users and devs
-        db.Ticket.find({ _id: req.params.id })
+        db.Ticket.findOne({ _id: req.params.id })
             .then((ticket) => {
                 //find the assocaited usernames
                 db.User.findOne({ _id: ticket.createdBy })
