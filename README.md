@@ -16,6 +16,7 @@ ort: MERN Stack Bug Tracker App (Backend Repository)
 -   POST api/users/register (Public) -- create customer user account
 -   POST api/users/register-company (Public) -- create an admin or dev account with a new or existing company
 -   POST api/tickets (Public) -- create tickets
+-   POST api/tickets/:id/comments (Private) where id is ticket id -- create comment on ticket
 
 -   PUT /api/tickets/:id (Private) where id is ticket id -- update assignedTo and priority (admin only) or status (admin or dev)
 -   PUT /api/users/:id (Private) where id is user id -- update email, password, or username (any user)
@@ -23,7 +24,7 @@ ort: MERN Stack Bug Tracker App (Backend Repository)
 
 -   DELETE /api/company (Private) -- delete company user belongs to and all it's users (admin only)
 -   DELETE /api/user/:id (Private) where id is user id -- delete user account
--   DELETE /api/tickets/:id/comments (Private) where id is comment id-- deletes comment by id
+-   DELETE /api/tickets/:id/comments (Private) where id is comment id-- deletes comment by id (admin only)
 
 ```js
 const roleSchema = new Schema({
