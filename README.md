@@ -26,26 +26,28 @@ ort: MERN Stack Bug Tracker App (Backend Repository)
 -   DELETE /api/user/:id (Private) where id is user id -- delete user account
 -   DELETE /api/tickets/:id/comments (Private) where id is comment id-- deletes comment by id (admin only)
 
+
+## Schema's Used
+
+This schema is embedded with assigned admin and dev roles for the comapny. Super simple, right?!
+
 ```js
 const roleSchema = new Schema({
     admin: [{ type: String }],
     dev: [{ type: String }]
 });
 
-// drop down bar to select companies in our DB
-// radio choice of "register a company" or "join with a company"
-// register company checks for existing company and generates and sends a key
-// by default they should be an admin under that "register a compay" email provided
-// UUID for companyKey to create unique key for that company
 const companySchema = new Schema({
     name: { type: String, unique: true },
     products: [{ type: String }],
     roles: [roleSchema],
     companyKey: { type: String }
 });
+```
 
-// check username in company roles before creation
-// permissions dropdown options [consumer, dev, admin]
+This schema covers the basic requirements for a user. The permissions have several checks and can be 'dev' or 'admin'. Regular consumers are not assigned a role.
+
+```js
 const userSchema = new Schema({
     username: { type: String, required: true },
     email: { type: String, required: true, unique: true },
@@ -57,16 +59,11 @@ const userSchema = new Schema({
     permissions: { type: String },
     company: [{ type: String }]
 });
+```
 
-//dropdown for status for series of vals "completed", "received", "in progress", etc.
-// assignTo --> admin assigns ---> dev
-// store dev email in assigned to
-// grab dev email when admin assigns a dev
-// createdBy is the user's email that made the bug report
-// priority status is a dropdown ADMIN selects after receiving the ticket
-// dropdown is a string of priorities FOR ADMIN (Low, Med, High, Critical), but its a number to parse on backend
-// product and company are dropdown (multiform)
-// picutre and desc is multiform
+Here is the ticket Schema. The only thing required is a description of the bug, however, half the ticket is updated by an admin or dev later on in the reporting process. 
+
+```js
 const ticketSchema = new Schema({
     title: {
         type: String,
@@ -89,4 +86,17 @@ const ticketSchema = new Schema({
     },
     createdBy: { type: String }
 });
+```
+Lastly, the comment Schema! These comments are left on tickets for communication about buggy details between dev, admin, and consumers that are tracking their reported bugs. Fun! 
+
+```js
+const commentSchema = new Schema({
+    ticket: {type: String},
+    comment: {type: String},
+    commentBy: {type: String},
+    createdAt: {
+        type: Date,
+        default: new Date()
+    },
+})
 ```
