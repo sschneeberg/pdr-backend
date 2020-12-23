@@ -29,6 +29,18 @@ router.get('/companies', (req, res) => {
     });
 });
 
+// POST /api/tickets/ (Public)
+router.post('/', passport.authenticate('jwt', { session: false }), (req, res) => {
+    db.Ticket.create({
+        title: req.body.title,
+        company: req.body.company,
+        product: req.body.product,
+        picture: req.body.picture,
+        description: req.body.description,
+        createdBy: req.body.id
+    });
+});
+
 //PRIVATE ROUTES FOR VIEWING BUG DETAILS
 
 // GET /api/tickets/:id/comments  (Private) -- where id is a ticket id
@@ -39,9 +51,11 @@ router.get(
         isDev(req, res, next);
     },
     (req, res) => {
-        db.Comment.find({ ticket: req.params.id }).then((comments) => {
-            res.status(200).json({ comments: comments });
-        });
+        db.Comment.find({ ticket: req.params.id })
+            .then((comments) => {
+                res.status(200).json({ comments: comments });
+            })
+            .catch((err) => console.log(err));
     }
 );
 
@@ -51,18 +65,17 @@ router.post('/:id/comments', passport.authenticate('jwt', { session: false }), (
         ticket: req.params.id,
         comment: req.body.comment,
         commentBy: req.user.id,
-    })
-})
+    }).catch((err) => console.log(err));
+});
 
 router.delete('/comment/:id', passport.authenticate('jwt', { session: false }), (req, res) => {
     db.Comment.remove({
         id: req.params.id
     }, {justOne: true}).then(()=> {
         res.json({msg: "comment deleted"})
-    })
-})
+    }).catch((err) => console.log(err));
+});
 
-// GET /api/tickets/:id (Private)  -- where id is user id
 router.get(
     '/:id',
     function (req, res, next) {
@@ -71,11 +84,23 @@ router.get(
     },
     (req, res) => {
         //will find tickets for both users and devs
-        db.Ticket.find({ $or: [{ createdBy: req.params.id }, { assignedTo: req.params.id }] }).then((tickets) => {
-            res.status(200).json({ tickets: tickets });
-        });
+        db.Ticket.find({ _id: req.params.id })
+            .then((ticket) => {
+                //find the assocaited usernames
+                db.User.findOne({ _id: ticket.createdBy })
+                    .then((creator) => {
+                        db.User.findOne({ _id: ticket.assignedTo })
+                            .then((dev) => {
+                                res.status(200).json({ ticket: ticket, createdBy: creator, assignedTo: dev });
+                            })
+                            .catch((err) => console.log(err));
+                    })
+                    .catch((err) => console.log(err));
+            })
+            .catch((err) => console.log(err));
     }
 );
+
 
 // POST /api/tickets/:id (Private) --- where consumer creates a ticket
 router.post('/:id', (req,res) => {
@@ -89,6 +114,45 @@ router.post('/:id', (req,res) => {
         createdBy: req.user.id
     })
 })
+
+// PUT /api/tickets/:id (Private) -- where id is ticket id
+router.put('/:id', passport.authenticate('jwt', { session: false }), (req, res) => {
+    if (req.user.permissions === 'admin') {
+        //if admin allow assignTo and proirity edits
+        db.Ticket.updateOne(
+            { _id: req.params.id },
+            {
+                $set: {
+                    priority: req.body.priority,
+                    asignedTo: req.body.assignedTo
+                }
+            }
+        )
+            .then(() => res.json({ msg: 'updated' }))
+            .catch((err) => console.log(err));
+    } else if (req.body.permissions === 'dev' || req.body.permissions === 'admin') {
+        //if dev or admin allow status change -- add closeAt when closed
+        let closedAt = '';
+        if (req.body.status === 'Closed') {
+            closedAt = new Date();
+        }
+        db.Ticket.updateOne(
+            { _id: req.params.id },
+            {
+                $set: {
+                    status: req.body.status,
+                    closedAt: closedAt
+                }
+            }
+        )
+            .then(() => res.json({ msg: 'updated' }))
+            .catch((err) => console.log(err));
+    } else {
+        //if not dev or admin give message not allowed here
+        res.json({ msg: 'You do not have the permissions to access this route' });
+    }
+});
+
 
 
 
