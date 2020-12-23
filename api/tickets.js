@@ -69,7 +69,9 @@ router.post('/:id/comments', passport.authenticate('jwt', { session: false }), (
         ticket: req.params.id,
         comment: req.body.comment,
         commentBy: req.user.id
-    }).catch((err) => console.log(err));
+    })
+        .then(() => res.json({ msg: 'Comment created' }))
+        .catch((err) => console.log(err));
 });
 
 router.delete('/comment/:id', passport.authenticate('jwt', { session: false }), (req, res) => {
