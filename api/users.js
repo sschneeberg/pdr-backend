@@ -55,85 +55,91 @@ router.post('/register-company', (req, res) => {
         } else {
             db.Company.findOne({
                 name: req.body.company
-            }).then((company) =>{
+            }).then((company) => {
                 if (company) {
-                    if (req.body.companyKey === company.companyKey) { 
+                    if (req.body.companyKey === company.companyKey) {
                         const newUser = new db.User({
+                            username: req.body.username,
+                            email: req.body.email,
+                            password: req.body.password,
+                            permissions: req.body.permissions,
+                            company: company.name
+                        });
+                        //salt and hash
+                        bcrypt.genSalt(10, (error1, salt) => {
+                            if (error1) throw Error;
+                            bcrypt.hash(newUser.password, salt, (error2, hash) => {
+                                if (error2) throw Error;
+                                //change password to hash before saving new user
+                                newUser.password = hash;
+                                newUser.save().then((createdUser) => {
+                                    if (createdUser.permissions === 'dev') {
+                                        db.Company.updateOne(
+                                            {
+                                                name: createdUser.company
+                                            },
+                                            {
+                                                $push: {
+                                                    'roles.dev': createdUser._id
+                                                }
+                                            }
+                                        )
+                                            .then(() => {
+                                                res.status(201).json({ user: createdUser });
+                                            })
+                                            .catch((err) => res.json({ msg: err }));
+                                    } else {
+                                        db.Company.findOneAndUpdate(
+                                            {
+                                                _id: company._id
+                                            },
+                                            {
+                                                $push: {
+                                                    'roles.admin': createdUser._id
+                                                }
+                                            }
+                                        )
+                                            .then(() => {
+                                                res.status(201).json({ user: createdUser });
+                                            })
+                                            .catch((err) => res.json({ msg: err }));
+                                    }
+                                });
+                            });
+                        });
+                    } else {
+                        res.status(400).json({ msg: 'Keys do not match our records' });
+                    }
+                } else {
+                    const newUser = new db.User({
                         username: req.body.username,
                         email: req.body.email,
                         password: req.body.password,
                         permissions: req.body.permissions,
-                        company: company.name
-                        })
-                        //salt and hash
+                        company: req.body.company
+                    });
                     bcrypt.genSalt(10, (error1, salt) => {
-                    if (error1) throw Error;
-                    bcrypt.hash(newUser.password, salt, (error2, hash) => {
-                    if (error2) throw Error;
-                    //change password to hash before saving new user
-                    newUser.password = hash;
-                    newUser
-                        .save()
-                        .then((createdUser) => {
-                            if (createdUser.permissions === 'dev') {
-                                db.Company.updateOne({
-                                name: createdUser.company
-                            }, {
-                                $push: {
-                                    "roles.dev": createdUser._id
-                                }
-                            }).then(()=> {
-                                res.status(201).json({ user: createdUser })}
-                                ).catch((err) => res.json({msg: err}))
-                            } else {
-                                
-                                db.Company.findOneAndUpdate({
-                                    _id: company._id
-                                }, {
-                                    $push: {
-                                        "roles.admin": createdUser._id
-                                    }
-                                }).then(()=> {
-                                    res.status(201).json({ user: createdUser })
-                                
-                                }).catch((err) => res.json({msg: err}))
-                            }
-                    }); 
-                });         
-            })   
-                } else {
-                    res.status(400).json({msg: "Keys do not match our records"})
+                        if (error1) throw Error;
+                        bcrypt.hash(newUser.password, salt, (error2, hash) => {
+                            if (error2) throw Error;
+                            //change password to hash before saving new user
+                            newUser.password = hash;
+                            newUser
+                                .save()
+                                .then((createdUser) =>
+                                    db.Company.create({
+                                        name: req.body.company,
+                                        products: req.body.products.split(','),
+                                        roles: { admin: [createdUser._id] }
+                                    }).then(() => {
+                                        res.status(201).json({ user: createdUser });
+                                    })
+                                )
+                                .catch((err) => res.json({ msg: err }));
+                        });
+                    });
                 }
-            } else {
-                const newUser = new db.User({
-                    username: req.body.username,
-                    email: req.body.email,
-                    password: req.body.password,
-                    permissions: req.body.permissions,
-                    company: req.body.company
-                });
-                bcrypt.genSalt(10, (error1, salt) => {
-                    if (error1) throw Error;
-                    bcrypt.hash(newUser.password, salt, (error2, hash) => {
-                        if (error2) throw Error;
-                        //change password to hash before saving new user
-                        newUser.password = hash;
-                        newUser
-                            .save()
-                            .then((createdUser) =>
-                            db.Company.create({
-                            name: req.body.company,
-                            products: req.body.products.split(","),
-                            roles: {admin: [createdUser._id] },
-                            }).then(() => {
-                                res.status(201).json({ user: createdUser })
-                            })
-                                
-                            )
-                            .catch((err) => res.json({msg: err}))
-                        })}
-                )}
-            })  
+            });
         }
     });
 });
@@ -175,7 +181,6 @@ router.post('/login', (req, res) => {
             }
         })
         .catch((err) => res.json({ msg: err }));
-
 });
 
 // PUT /api/users/:id (Private) -- where id is user id
@@ -240,17 +245,6 @@ router.put(
         }
     }
 );
-
-//GET api/users/current (Private)
-router.get('/current', passport.authenticate('jwt', { session: false }), (req, res) => {
-    //passport will check for jwt token for us, if avialable we can access the route
-    res.json({
-        id: req.user._id,
-        username: req.user.username,
-        email: req.user.email,
-        permissions: req.user.permissions
-    }).catch((err) => res.json({msg: err}));
-});
 
 // DELETE api/users/:id (private) -- where id is user id
 router.delete('/:id', passport.authenticate('jwt', { session: false }), (req, res) => {
