@@ -15,48 +15,48 @@ const db = require('../models');
 // GET /api/tickets/companies (Public)
 router.get('/companies', (req, res) => {
     //find all the companies in db and their products
-    db.Company.find({}, { name: 1, products: 1, _id: 0 }).then((companies) => {
-        const companyMap = {};
-        //create map for company: product
-        for (company of companies) {
-            companyMap[company.name] = company.products;
-        }
-        //send up array of companies and map of company name to products
-        res.status(200)
-            .json({
+    db.Company.find({}, { name: 1, products: 1, _id: 0 })
+        .then((companies) => {
+            const companyMap = {};
+            //create map for company: product
+            for (company of companies) {
+                companyMap[company.name] = company.products;
+            }
+            //send up array of companies and map of company name to products
+            res.status(200).json({
                 companies: companies,
                 company_products: companyMap
-            })
-            .catch((err) => res.json({ msg: err }));
-    });
-});
-
-// POST /api/tickets/ (Public)
-router.post('/', (req, res) => {
-    db.Ticket.create({
-        title: req.body.title,
-        company: req.body.company,
-        product: req.body.product,
-        picture: req.body.picture,
-        description: req.body.description,
-        createdBy: req.body.id
-    })
-        .then(() => {
-            res.json({ msg: 'Ticket Created' });
+            });
         })
         .catch((err) => res.json({ msg: err }));
 });
+
+// POST /api/tickets/ (Public)
+router
+    .post('/', (req, res) => {
+        db.Ticket.create({
+            title: req.body.title,
+            company: req.body.company,
+            product: req.body.product,
+            picture: req.body.picture,
+            description: req.body.description,
+            createdBy: req.body.id
+        }).then(() => {
+            res.json({ msg: 'Ticket Created' });
+        });
+    })
+    .catch((err) => res.json({ msg: err }));
 
 //PRIVATE ROUTES FOR VIEWING BUG DETAILS
 
 // GET /api/tickets/:id/comments  (Private) -- where id is a ticket id
-router.get('/:id/comments', passport.authenticate('jwt', { session: false }), (req, res) => {
-    db.Comment.find({ ticket: req.params.id })
-        .then((comments) => {
+router
+    .get('/:id/comments', passport.authenticate('jwt', { session: false }), (req, res) => {
+        db.Comment.find({ ticket: req.params.id }).then((comments) => {
             res.status(200).json({ comments: comments });
-        })
-        .catch((err) => res.json({ msg: err }));
-});
+        });
+    })
+    .catch((err) => res.json({ msg: err }));
 
 // POST /api/tickets/:id/comments (Private) -- where id is the ticket id
 router.post('/:id/comments', passport.authenticate('jwt', { session: false }), (req, res) => {
