@@ -110,11 +110,8 @@ router.get(
 );
 
 // PUT /api/tickets/:id (Private) -- where id is ticket id
-router.put(
-    '/:id',
-    //passport.authenticate('jwt', { session: false }),
-    (req, res) => {
-        //if (req.user.permissions === 'admin') {
+router.put('/:id', passport.authenticate('jwt', { session: false }), (req, res) => {
+    if (req.user.permissions === 'admin') {
         //if admin allow assignTo and proirity edits
         db.Ticket.updateOne(
             { _id: req.params.id },
@@ -125,29 +122,27 @@ router.put(
         )
             .then(() => res.json({ msg: 'updated' }))
             .catch((err) => console.log(err));
-        /*
-   // } else if (req.body.permissions === 'dev' || req.body.permissions === 'admin') {
+    } else if (req.body.permissions === 'dev' || req.body.permissions === 'admin') {
         //if dev or admin allow status change -- add closeAt when closed
-        let closedAt = '';
+        let closedDate = '';
         if (req.body.status === 'Closed') {
-            closedAt = new Date();
+            closedDate = new Date();
         }
         db.Ticket.updateOne(
             { _id: req.params.id },
             {
                 $set: {
                     status: req.body.status,
-                    closedAt: closedAt
+                    closedAt: closedDate
                 }
             }
         )
             .then(() => res.json({ msg: 'updated' }))
             .catch((err) => console.log(err));
-    //} else {
+    } else {
         //if not dev or admin give message not allowed here
-       // res.json({ msg: 'You do not have the permissions to access this route' });
-    //} */
+        res.json({ msg: 'You do not have the permissions to access this route' });
     }
-);
+});
 
 module.exports = router;
