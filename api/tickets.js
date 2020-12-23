@@ -101,6 +101,20 @@ router.get(
     }
 );
 
+
+// POST /api/tickets/:id (Private) --- where consumer creates a ticket
+router.post('/:id', (req,res) => {
+   
+    db.Ticket.create({
+        title: req.body.title,
+        company: req.body.company,
+        product: req.body.product,
+        picture: req.body.picture,
+        description: req.body.description,
+        createdBy: req.user.id
+    })
+})
+
 // PUT /api/tickets/:id (Private) -- where id is ticket id
 router.put('/:id', passport.authenticate('jwt', { session: false }), (req, res) => {
     if (req.user.permissions === 'admin') {
@@ -138,6 +152,7 @@ router.put('/:id', passport.authenticate('jwt', { session: false }), (req, res) 
         res.json({ msg: 'You do not have the permissions to access this route' });
     }
 });
+
 
 
 

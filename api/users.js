@@ -9,6 +9,7 @@ const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET;
 //models
 const db = require('../models');
+const { update } = require('../models/User');
 
 //GET api/users/test (Public)
 router.get('/test', (req, res) => {
@@ -45,7 +46,6 @@ router.post('/register', (req, res) => {
     });
 });
 
-//POST api/users/register-company (Public) (create a company)
 router.post('/register-company', (req, res) => {
     //modify to check for permissions so user can be both company and customer
     db.User.findOne({ email: req.body.email }).then((user) => {
@@ -53,63 +53,87 @@ router.post('/register-company', (req, res) => {
             //already have this user, they cannot register again
             res.status(400).json({ msg: 'Email already exsists' });
         } else {
-            const newUser = new db.User({
-                username: req.body.username,
-                email: req.body.email,
-                password: req.body.password,
-                permissions: req.body.permissions,
-                company: req.body.company
-            });
-            //check for company
-            db.Company.findOne({name: req.body.company}).then((company) => { 
+            db.Company.findOne({
+                name: req.body.company
+            }).then((company) =>{
                 if (company) {
-                    //if company found, compare keys
-                    if (req.body.key === company.key) {
-                        //update companies for roles of dev or admin
-                        if (newUser.permissions === 'dev') {
-                            db.Company.updateOne({
-                            name: company.name
-                        }, {
-                            $push: {
-                                "roles.dev": newUser.id
-                            }
+                    if (req.body.companyKey === company.companyKey) { 
+                        const newUser = new db.User({
+                        username: req.body.username,
+                        email: req.body.email,
+                        password: req.body.password,
+                        permissions: req.body.permissions,
+                        company: company.name
                         })
-                        } else {
-                            db.Company.updateOne({
-                                name: company.name
-                            }, {
-                                $push: {
-                                    "roles.admin": newUser.id
-                                }
-                            })
-                        }
-                    } else {
-                        res.status(400).json({msg: "Key doesn't match our records"})
-                    }
-                } else {
-                    // if company doesnt exist, make a new one
-                    const newCompany = new db.Company({
-                        name: req.body.company,
-                        products: req.body.products.split(","),
-                        roles: {admin: [newUser.id] },
-                    })
-                }
-            })
-            //salt and hash
-            bcrypt.genSalt(10, (error1, salt) => {
-                if (error1) throw Error;
-                bcrypt.hash(newUser.password, salt, (error2, hash) => {
+                        //salt and hash
+                    bcrypt.genSalt(10, (error1, salt) => {
+                    if (error1) throw Error;
+                    bcrypt.hash(newUser.password, salt, (error2, hash) => {
                     if (error2) throw Error;
                     //change password to hash before saving new user
                     newUser.password = hash;
                     newUser
                         .save()
-                        .then((createdUser) =>
-                            res.status(201).json({ user: createdUser })
-                        )
-                        .catch((err) => console.log(err));
+                        .then((createdUser) => {
+                            if (createdUser.permissions === 'dev') {
+                                db.Company.updateOne({
+                                name: createdUser.company
+                            }, {
+                                $push: {
+                                    "roles.dev": createdUser._id
+                                }
+                            }).then(()=> {
+                                res.status(201).json({ user: createdUser })}
+                                ).catch((err) => res.json({msg: err}))
+                            } else {
+                                
+                                db.Company.findOneAndUpdate({
+                                    _id: company._id
+                                }, {
+                                    $push: {
+                                        "roles.admin": createdUser._id
+                                    }
+                                }).then(()=> {
+                                    res.status(201).json({ user: createdUser })
+                                
+                                }).catch((err) => res.json({msg: err}))
+                            }
+                    }); 
+                });         
+            })   
+                } else {
+                    res.status(400).json({msg: "Keys do not match our records"})
+                }
+            } else {
+                const newUser = new db.User({
+                    username: req.body.username,
+                    email: req.body.email,
+                    password: req.body.password,
+                    permissions: req.body.permissions,
+                    company: req.body.company
                 });
-            });
+                bcrypt.genSalt(10, (error1, salt) => {
+                    if (error1) throw Error;
+                    bcrypt.hash(newUser.password, salt, (error2, hash) => {
+                        if (error2) throw Error;
+                        //change password to hash before saving new user
+                        newUser.password = hash;
+                        newUser
+                            .save()
+                            .then((createdUser) =>
+                            db.Company.create({
+                            name: req.body.company,
+                            products: req.body.products.split(","),
+                            roles: {admin: [createdUser._id] },
+                            }).then(() => {
+                                res.status(201).json({ user: createdUser })
+                            })
+                                
+                            )
+                            .catch((err) => res.json({msg: err}))
+                        })}
+                )}
+            })  
         }
     });
 });
