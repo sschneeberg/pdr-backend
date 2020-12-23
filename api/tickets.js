@@ -30,7 +30,7 @@ router.get('/companies', (req, res) => {
 });
 
 // POST /api/tickets/ (Public)
-router.post('/', passport.authenticate('jwt', { session: false }), (req, res) => {
+router.post('/', (req, res) => {
     db.Ticket.create({
         title: req.body.title,
         company: req.body.company,
@@ -38,7 +38,11 @@ router.post('/', passport.authenticate('jwt', { session: false }), (req, res) =>
         picture: req.body.picture,
         description: req.body.description,
         createdBy: req.body.id
-    });
+    })
+        .then(() => {
+            res.json({ msg: 'Ticket Created' });
+        })
+        .catch((err) => console.log(err));
 });
 
 //PRIVATE ROUTES FOR VIEWING BUG DETAILS
@@ -64,16 +68,21 @@ router.post('/:id/comments', passport.authenticate('jwt', { session: false }), (
     db.Comment.create({
         ticket: req.params.id,
         comment: req.body.comment,
-        commentBy: req.user.id,
+        commentBy: req.user.id
     }).catch((err) => console.log(err));
 });
 
 router.delete('/comment/:id', passport.authenticate('jwt', { session: false }), (req, res) => {
-    db.Comment.remove({
-        id: req.params.id
-    }, {justOne: true}).then(()=> {
-        res.json({msg: "comment deleted"})
-    }).catch((err) => console.log(err));
+    db.Comment.remove(
+        {
+            id: req.params.id
+        },
+        { justOne: true }
+    )
+        .then(() => {
+            res.json({ msg: 'comment deleted' });
+        })
+        .catch((err) => console.log(err));
 });
 
 router.get(
@@ -138,7 +147,5 @@ router.put('/:id', passport.authenticate('jwt', { session: false }), (req, res) 
         res.json({ msg: 'You do not have the permissions to access this route' });
     }
 });
-
-
 
 module.exports = router;
