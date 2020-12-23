@@ -61,40 +61,46 @@ router.post('/register-company', (req, res) => {
                 company: req.body.company
             });
             //check for company
-            db.Company.findOne({name: req.body.company}).then((company) => { 
+            db.Company.findOne({ name: req.body.company }).then((company) => {
                 if (company) {
                     //if company found, compare keys
                     if (req.body.key === company.key) {
                         //update companies for roles of dev or admin
                         if (newUser.permissions === 'dev') {
-                            db.Company.updateOne({
-                            name: company.name
-                        }, {
-                            $push: {
-                                "roles.dev": newUser.id
-                            }
-                        })
-                        } else {
-                            db.Company.updateOne({
-                                name: company.name
-                            }, {
-                                $push: {
-                                    "roles.admin": newUser.id
+                            db.Company.updateOne(
+                                {
+                                    name: company.name
+                                },
+                                {
+                                    $push: {
+                                        'roles.dev': newUser.id
+                                    }
                                 }
-                            })
+                            );
+                        } else {
+                            db.Company.updateOne(
+                                {
+                                    name: company.name
+                                },
+                                {
+                                    $push: {
+                                        'roles.admin': newUser.id
+                                    }
+                                }
+                            );
                         }
                     } else {
-                        res.status(400).json({msg: "Key doesn't match our records"})
+                        res.status(400).json({ msg: "Key doesn't match our records" });
                     }
                 } else {
                     // if company doesnt exist, make a new one
                     const newCompany = new db.Company({
                         name: req.body.company,
-                        products: req.body.products.split(","),
-                        roles: {admin: [newUser.id] },
-                    })
+                        products: req.body.products.split(','),
+                        roles: { admin: [newUser.id] }
+                    });
                 }
-            })
+            });
             //salt and hash
             bcrypt.genSalt(10, (error1, salt) => {
                 if (error1) throw Error;
@@ -104,16 +110,13 @@ router.post('/register-company', (req, res) => {
                     newUser.password = hash;
                     newUser
                         .save()
-                        .then((createdUser) =>
-                            res.status(201).json({ user: createdUser })
-                        )
+                        .then((createdUser) => res.status(201).json({ user: createdUser }))
                         .catch((err) => console.log(err));
                 });
             });
         }
     });
 });
-
 
 //POST api/users/login (Public)
 router.post('/login', (req, res) => {
@@ -193,11 +196,11 @@ router.put(
                     //update company as well
                     db.Company.updateOne(
                         { name: req.user.company },
-                        { $push: { 'roles.dev': newUser.id } },
-                        { $pull: { 'roles.admin': req.params.id } }
-                    );
+                        { $pull: { 'roles.dev': req.params.id }, $push: { 'roles.admin': req.params.id } }
+                    )
+                        .then(() => res.json({ msg: 'updated' }))
+                        .catch((err) => console.log(err));
                 })
-                .then(() => res.json({ msg: 'updated' }))
                 .catch((err) => console.log(err));
         } else if (req.body.permissions === 'dev') {
             db.User.updateOne({ _id: req.params.id }, { $set: { permissions: req.body.permissions } })
@@ -205,11 +208,11 @@ router.put(
                     //update company as well
                     db.Company.updateOne(
                         { name: req.user.company },
-                        { $pull: { 'roles.dev': newUser.id } },
-                        { $push: { 'roles.admin': req.params.id } }
-                    );
+                        { $push: { 'roles.dev': req.params.id }, $pull: { 'roles.admin': req.params.id } }
+                    )
+                        .then(() => res.json({ msg: 'updated' }))
+                        .catch((err) => console.log(err));
                 })
-                .then(() => res.json({ msg: 'updated' }))
                 .catch((err) => console.log(err));
         }
     }
