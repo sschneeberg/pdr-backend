@@ -32,20 +32,20 @@ router.get('/companies', (req, res) => {
 });
 
 // POST /api/tickets/ (Public)
-router
-    .post('/', (req, res) => {
-        db.Ticket.create({
-            title: req.body.title,
-            company: req.body.company,
-            product: req.body.product,
-            picture: req.body.picture,
-            description: req.body.description,
-            createdBy: req.body.id
-        }).then(() => {
-            res.json({ msg: 'Ticket Created' });
-        });
+router.post('/', (req, res) => {
+    db.Ticket.create({
+        title: req.body.title,
+        company: req.body.company,
+        product: req.body.product,
+        picture: req.body.picture,
+        description: req.body.description,
+        createdBy: req.body.id
     })
-    .catch((err) => res.json({ msg: err }));
+        .then(() => {
+            res.json({ msg: 'Ticket Created' });
+        })
+        .catch((err) => res.json({ msg: err }));
+});
 
 //PRIVATE ROUTES FOR VIEWING BUG DETAILS
 
