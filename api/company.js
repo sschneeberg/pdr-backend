@@ -24,9 +24,9 @@ router.delete(
                     .then(() => {
                         res.json({ msg: 'Company and users deleted' });
                     })
-                    .catch((err) => console.log(err));
+                    .catch((err) => res.json({ msg: err }));
             })
-            .catch((err) => console.log(err));
+            .catch((err) => res.json({ msg: err }));
     }
 );
 

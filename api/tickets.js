@@ -42,7 +42,7 @@ router.post('/', (req, res) => {
         .then(() => {
             res.json({ msg: 'Ticket Created' });
         })
-        .catch((err) => console.log(err));
+        .catch((err) => res.json({ msg: err }));
 });
 
 //PRIVATE ROUTES FOR VIEWING BUG DETAILS
@@ -59,7 +59,7 @@ router.get(
             .then((comments) => {
                 res.status(200).json({ comments: comments });
             })
-            .catch((err) => console.log(err));
+            .catch((err) => res.json({ msg: err }));
     }
 );
 
@@ -71,7 +71,7 @@ router.post('/:id/comments', passport.authenticate('jwt', { session: false }), (
         commentBy: req.user.id
     })
         .then(() => res.json({ msg: 'Comment created' }))
-        .catch((err) => console.log(err));
+        .catch((err) => res.json({ msg: err }));
 });
 
 // DELETE /api/tickets/:id/comments (Private) -- where id is comment id
@@ -80,7 +80,7 @@ router.delete('/:id/comments', passport.authenticate('jwt', { session: false }),
         .then(() => {
             res.json({ msg: 'comment deleted' });
         })
-        .catch((err) => console.log(err));
+        .catch((err) => res.json({ msg: err }));
 });
 
 // GET /api/ticket/:id (Private) -- where id is ticekt id
@@ -101,11 +101,11 @@ router.get(
                             .then((dev) => {
                                 res.status(200).json({ ticket: ticket, createdBy: creator, assignedTo: dev });
                             })
-                            .catch((err) => console.log(err));
+                            .catch((err) => res.json({ msg: err }));
                     })
-                    .catch((err) => console.log(err));
+                    .catch((err) => res.json({ msg: err }));
             })
-            .catch((err) => console.log(err));
+            .catch((err) => res.json({ msg: err }));
     }
 );
 
@@ -121,7 +121,7 @@ router.put('/:id', passport.authenticate('jwt', { session: false }), (req, res) 
             }
         )
             .then(() => res.json({ msg: 'updated' }))
-            .catch((err) => console.log(err));
+            .catch((err) => res.json({ msg: err }));
     } else if (req.body.permissions === 'dev' || req.body.permissions === 'admin') {
         //if dev or admin allow status change -- add closeAt when closed
         let closedDate = '';
@@ -138,7 +138,7 @@ router.put('/:id', passport.authenticate('jwt', { session: false }), (req, res) 
             }
         )
             .then(() => res.json({ msg: 'updated' }))
-            .catch((err) => console.log(err));
+            .catch((err) => res.json({ msg: err }));
     } else {
         //if not dev or admin give message not allowed here
         res.json({ msg: 'You do not have the permissions to access this route' });

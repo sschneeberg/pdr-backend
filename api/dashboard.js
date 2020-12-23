@@ -14,12 +14,13 @@ router.get('/test', (req, res) => {
 router.get('/', passport.authenticate('jwt', { session: false }), (req, res) => {
     console.log(req);
     if (req.user.permissions !== 'admin') {
-
         db.Ticket.find({
             $or: [{ createdBy: req.user.id }, { assignedTo: req.user.id }]
-        }).then((tickets) => {
-            res.status(200).json({ tickets });
-        });
+        })
+            .then((tickets) => {
+                res.status(200).json({ tickets });
+            })
+            .catch((err) => res.json({ msg: err }));
     }
 });
 
@@ -32,20 +33,24 @@ router.get(
     (req, res) => {
         db.Company.findOne({
             name: req.user.company
-        }).then((company) => {
-            let companyInfo = [];
-            companyInfo.push(company);
-            db.Ticket.find({
-                company: company.name
-            }).then((tickets) => {
-                let ticketInfo = [];
-                ticketInfo.push(tickets);
-                res.json({
-                    companyInfo,
-                    ticketInfo
-                });
-            });
-        });
+        })
+            .then((company) => {
+                let companyInfo = [];
+                companyInfo.push(company);
+                db.Ticket.find({
+                    company: company.name
+                })
+                    .then((tickets) => {
+                        let ticketInfo = [];
+                        ticketInfo.push(tickets);
+                        res.json({
+                            companyInfo,
+                            ticketInfo
+                        });
+                    })
+                    .catch((err) => res.json({ msg: err }));
+            })
+            .catch((err) => res.json({ msg: err }));
     }
 );
 

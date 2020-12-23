@@ -38,7 +38,7 @@ router.post('/register', (req, res) => {
                     newUser
                         .save()
                         .then((createdUser) => res.status(201).json({ user: createdUser }))
-                        .catch((err) => console.log(err));
+                        .catch((err) => res.json({ msg: err }));
                 });
             });
         }
@@ -111,7 +111,7 @@ router.post('/register-company', (req, res) => {
                     newUser
                         .save()
                         .then((createdUser) => res.status(201).json({ user: createdUser }))
-                        .catch((err) => console.log(err));
+                        .catch((err) => res.json({ msg: err }));
                 });
             });
         }
@@ -122,37 +122,39 @@ router.post('/register-company', (req, res) => {
 router.post('/login', (req, res) => {
     const email = req.body.email;
     const password = req.body.password;
-    db.User.findOne({ email }).then((user) => {
-        if (!user) {
-            res.status(400).json({ msg: 'user not found' });
-        } else {
-            //if user found, check password match
-            bcrypt.compare(password, user.password).then((isMatch) => {
-                if (isMatch) {
-                    //send webtoken (create token payload)
-                    //send up user information and token
-                    const payload = {
-                        email: user.email,
-                        id: user._id,
-                        username: user.username,
-                        permissions: user.permissions
-                    };
-                    //sign token and send
-                    jwt.sign(payload, JWT_SECRET, { expiresIn: '1h' }, (error, token) => {
-                        if (error) throw Error;
-                        res.json({
-                            success: true,
-                            token: `Bearer ${token}`
+    db.User.findOne({ email })
+        .then((user) => {
+            if (!user) {
+                res.status(400).json({ msg: 'user not found' });
+            } else {
+                //if user found, check password match
+                bcrypt.compare(password, user.password).then((isMatch) => {
+                    if (isMatch) {
+                        //send webtoken (create token payload)
+                        //send up user information and token
+                        const payload = {
+                            email: user.email,
+                            id: user._id,
+                            username: user.username,
+                            permissions: user.permissions
+                        };
+                        //sign token and send
+                        jwt.sign(payload, JWT_SECRET, { expiresIn: '1h' }, (error, token) => {
+                            if (error) throw Error;
+                            res.json({
+                                success: true,
+                                token: `Bearer ${token}`
+                            });
                         });
-                    });
-                } else {
-                    res.status(400).json({
-                        msg: 'Login information incorrect'
-                    });
-                }
-            });
-        }
-    });
+                    } else {
+                        res.status(400).json({
+                            msg: 'Login information incorrect'
+                        });
+                    }
+                });
+            }
+        })
+        .catch((err) => res.json({ msg: err }));
 });
 
 // PUT /api/users/:id (Private) -- where id is user id
@@ -161,7 +163,7 @@ router.put('/:id', passport.authenticate('jwt', { session: false }), (req, res) 
     if (req.body.username) {
         db.User.updateOne({ _id: req.params.id }, { $set: { username: req.body.username } })
             .then(() => res.json({ msg: 'username updated' }))
-            .catch((err) => console.log(err));
+            .catch((err) => res.json({ msg: err }));
     }
     if (req.body.password) {
         bcrypt.genSalt(10, (error1, salt) => {
@@ -171,14 +173,14 @@ router.put('/:id', passport.authenticate('jwt', { session: false }), (req, res) 
                 //change password to hash before saving updated password
                 db.User.updateOne({ _id: req.params.id }, { $set: { password: hash } })
                     .then(() => res.json({ msg: 'password updated' }))
-                    .catch((err) => console.log(err));
+                    .catch((err) => res.json({ msg: err }));
             });
         });
     }
     if (req.body.email) {
         db.User.updateOne({ _id: req.params.id }, { $set: { email: req.body.email } })
             .then(() => res.json({ msg: 'email updated' }))
-            .catch((err) => console.log(err));
+            .catch((err) => res.json({ msg: err }));
     }
 });
 
@@ -199,9 +201,9 @@ router.put(
                         { $pull: { 'roles.dev': req.params.id }, $push: { 'roles.admin': req.params.id } }
                     )
                         .then(() => res.json({ msg: 'updated' }))
-                        .catch((err) => console.log(err));
+                        .catch((err) => res.json({ msg: err }));
                 })
-                .catch((err) => console.log(err));
+                .catch((err) => res.json({ msg: err }));
         } else if (req.body.permissions === 'dev') {
             db.User.updateOne({ _id: req.params.id }, { $set: { permissions: req.body.permissions } })
                 .then(() => {
@@ -211,9 +213,9 @@ router.put(
                         { $push: { 'roles.dev': req.params.id }, $pull: { 'roles.admin': req.params.id } }
                     )
                         .then(() => res.json({ msg: 'updated' }))
-                        .catch((err) => console.log(err));
+                        .catch((err) => res.json({ msg: err }));
                 })
-                .catch((err) => console.log(err));
+                .catch((err) => res.json({ msg: err }));
         }
     }
 );
@@ -231,33 +233,42 @@ router.get('/current', passport.authenticate('jwt', { session: false }), (req, r
 
 // DELETE api/users/:id (private) -- where id is user id
 router.delete('/:id', passport.authenticate('jwt', { session: false }), (req, res) => {
-    db.User.findOne({ _id: req.params.id }).then((user) => {
-        if (user.company) {
-            //company member, remove from roles
-            if (user.permissions === 'dev') {
-                db.Company.findOneAndUpdate({ name: user.company }, { $pull: { 'roles.dev': req.params.id } }).then(
-                    () => {
-                        db.User.remove({ _id: req.params.id }, { justOne: true }).then(() => {
-                            res.json({ msg: 'Account deleted' });
-                        });
-                    }
-                );
-            } else if (user.permissions === 'admin') {
-                db.Company.findOneAndUpdate({ name: user.company }, { $pull: { 'roles.admin': req.params.id } }).then(
-                    () => {
-                        db.User.remove({ _id: req.params.id }, { justOne: true }).then(() => {
-                            res.json({ msg: 'Account deleted' });
-                        });
-                    }
-                );
+    db.User.findOne({ _id: req.params.id })
+        .then((user) => {
+            if (user.company) {
+                //company member, remove from roles
+                if (user.permissions === 'dev') {
+                    db.Company.findOneAndUpdate({ name: user.company }, { $pull: { 'roles.dev': req.params.id } }).then(
+                        () => {
+                            db.User.remove({ _id: req.params.id }, { justOne: true })
+                                .then(() => {
+                                    res.json({ msg: 'Account deleted' });
+                                })
+                                .catch((err) => res.json({ msg: err }));
+                        }
+                    );
+                } else if (user.permissions === 'admin') {
+                    db.Company.findOneAndUpdate(
+                        { name: user.company },
+                        { $pull: { 'roles.admin': req.params.id } }
+                    ).then(() => {
+                        db.User.remove({ _id: req.params.id }, { justOne: true })
+                            .then(() => {
+                                res.json({ msg: 'Account deleted' });
+                            })
+                            .catch((err) => res.json({ msg: err }));
+                    });
+                }
+            } else {
+                //just a regular user
+                db.User.remove({ _id: req.params.id }, { justOne: true })
+                    .then(() => {
+                        res.json({ msg: 'Account deleted' });
+                    })
+                    .catch((err) => res.json({ msg: err }));
             }
-        } else {
-            //just a regular user
-            db.User.remove({ _id: req.params.id }, { justOne: true }).then(() => {
-                res.json({ msg: 'Account deleted' });
-            });
-        }
-    });
+        })
+        .catch((err) => res.json({ msg: err }));
 });
 
 module.exports = router;
