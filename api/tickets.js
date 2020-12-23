@@ -25,7 +25,7 @@ router.get('/companies', (req, res) => {
         res.status(200).json({
             companies: companies,
             company_products: companyMap
-        });
+        }).catch((err) => res.json({msg: err}));
     });
 });
 
@@ -43,6 +43,7 @@ router.post('/', (req, res) => {
             res.json({ msg: 'Ticket Created' });
         })
         .catch((err) => res.json({ msg: err }));
+
 });
 
 //PRIVATE ROUTES FOR VIEWING BUG DETAILS
@@ -108,6 +109,20 @@ router.get(
             .catch((err) => res.json({ msg: err }));
     }
 );
+
+
+// POST /api/tickets/:id (Private) --- where consumer creates a ticket
+router.post('/:id', (req,res) => {
+   
+    db.Ticket.create({
+        title: req.body.title,
+        company: req.body.company,
+        product: req.body.product,
+        picture: req.body.picture,
+        description: req.body.description,
+        createdBy: req.user.id
+    }).catch((err) => res.json({msg: err}))
+})
 
 // PUT /api/tickets/:id (Private) -- where id is ticket id
 router.put('/:id', passport.authenticate('jwt', { session: false }), (req, res) => {

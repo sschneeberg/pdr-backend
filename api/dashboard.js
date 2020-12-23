@@ -21,6 +21,7 @@ router.get('/', passport.authenticate('jwt', { session: false }), (req, res) => 
                 res.status(200).json({ tickets });
             })
             .catch((err) => res.json({ msg: err }));
+
     }
 });
 
@@ -51,6 +52,7 @@ router.get(
                     .catch((err) => res.json({ msg: err }));
             })
             .catch((err) => res.json({ msg: err }));
+
     }
 );
 
