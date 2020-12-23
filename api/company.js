@@ -6,9 +6,9 @@ const router = express.Router();
 //models
 const db = require('../models');
 
-// DELETE /api/company/:id (private) -- where id is admin user id who is deleting company
+// DELETE /api/company (private) -- where id is admin user id who is deleting company
 router.delete(
-    '/:id',
+    '/',
     function (req, res, next) {
         passport.authenticate('jwt', { session: false });
         isAdmin(req, res, next);
@@ -24,8 +24,10 @@ router.delete(
                     .then(() => {
                         res.json({ msg: 'Company and users deleted' });
                     })
-                    .catch((err) => console.log(err));
+                    .catch((err) => res.json({ msg: err }));
             })
-            .catch((err) => console.log(err));
+            .catch((err) => res.json({ msg: err }));
     }
 );
+
+module.exports = router;

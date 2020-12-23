@@ -23,5 +23,6 @@ app.get('/', (req, res) => {
 app.use('/api/users', require('./api/users'));
 app.use('/api/tickets', require('./api/tickets'));
 app.use('/api/dashboard', require('./api/dashboard'));
+app.use('/api/company', require('./api/company'));
 
 app.listen(port, console.log(`listening on port ${port}`));
