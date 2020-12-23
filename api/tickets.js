@@ -25,7 +25,7 @@ router.get('/companies', (req, res) => {
         res.status(200).json({
             companies: companies,
             company_products: companyMap
-        });
+        }).catch((err) => res.json({msg: err}));
     });
 });
 
@@ -38,7 +38,7 @@ router.post('/', passport.authenticate('jwt', { session: false }), (req, res) =>
         picture: req.body.picture,
         description: req.body.description,
         createdBy: req.body.id
-    });
+    }).catch((err) => res.json({msg: err}));
 });
 
 //PRIVATE ROUTES FOR VIEWING BUG DETAILS
@@ -112,7 +112,7 @@ router.post('/:id', (req,res) => {
         picture: req.body.picture,
         description: req.body.description,
         createdBy: req.user.id
-    })
+    }).catch((err) => res.json({msg: err}))
 })
 
 // PUT /api/tickets/:id (Private) -- where id is ticket id

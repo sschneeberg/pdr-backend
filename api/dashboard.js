@@ -19,7 +19,7 @@ router.get('/', passport.authenticate('jwt', { session: false }), (req, res) => 
             $or: [{ createdBy: req.user.id }, { assignedTo: req.user.id }]
         }).then((tickets) => {
             res.status(200).json({ tickets });
-        });
+        }).catch((err) => res.json({msg: err}));
     }
 });
 
@@ -43,7 +43,7 @@ router.get(
                 res.json({
                     companyInfo,
                     ticketInfo
-                });
+                }).catch((err) => res.json({msg: err}));
             });
         });
     }
