@@ -15,7 +15,7 @@ ort: MERN Stack Bug Tracker App (Backend Repository)
 -   POST api/users/login (Public) -- login
 -   POST api/users/register (Public) -- create customer user account
 -   POST api/users/register-company (Public) -- create an admin or dev account with a new or existing company
--   POST api/ticket (Public) -- create tickets
+-   POST api/tickets (Public) -- create tickets
 
 -   PUT /api/tickets/:id (Private) where id is ticket id -- update assignedTo and priority (admin only) or status (admin or dev)
 -   PUT /api/users/:id (Private) where id is user id -- update email, password, or username (any user)
