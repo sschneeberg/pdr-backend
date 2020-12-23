@@ -111,7 +111,7 @@ router.get(
 );
 
 
-// POST /api/tickets/:id (Private) --- where consumer creates a ticket
+/ POST /api/tickets/:id (Private) --- where consumer creates a ticket
 router.post('/:id', (req,res) => {
    
     db.Ticket.create({
@@ -122,7 +122,7 @@ router.post('/:id', (req,res) => {
         description: req.body.description,
         createdBy: req.user.id
     }).catch((err) => res.json({msg: err}))
-})
+})/
 
 // PUT /api/tickets/:id (Private) -- where id is ticket id
 router.put('/:id', passport.authenticate('jwt', { session: false }), (req, res) => {
