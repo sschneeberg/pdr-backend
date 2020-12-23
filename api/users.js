@@ -159,8 +159,8 @@ router.post('/login', (req, res) => {
 router.put('/:id', passport.authenticate('jwt', { session: false }), (req, res) => {
     //let any logged in user change their password, email or username
     if (req.body.username) {
-        db.User.updateOne({ _id: req.body.id }, { $set: { username: req.body.username } })
-            .then(() => res.json({ msg: 'updated' }))
+        db.User.updateOne({ _id: req.params.id }, { $set: { username: req.body.username } })
+            .then(() => res.json({ msg: 'username updated' }))
             .catch((err) => console.log(err));
     }
     if (req.body.password) {
@@ -169,15 +169,15 @@ router.put('/:id', passport.authenticate('jwt', { session: false }), (req, res) 
             bcrypt.hash(req.body.password, salt, (error2, hash) => {
                 if (error2) throw Error;
                 //change password to hash before saving updated password
-                db.User.updateOne({ _id: req.body.id }, { $set: { username: hash } })
-                    .then(() => res.json({ msg: 'updated' }))
+                db.User.updateOne({ _id: req.params.id }, { $set: { password: hash } })
+                    .then(() => res.json({ msg: 'password updated' }))
                     .catch((err) => console.log(err));
             });
         });
     }
     if (req.body.email) {
-        db.User.updateOne({ _id: req.body.id }, { $set: { username: req.body.username } })
-            .then(() => res.json({ msg: 'updated' }))
+        db.User.updateOne({ _id: req.params.id }, { $set: { email: req.body.email } })
+            .then(() => res.json({ msg: 'email updated' }))
             .catch((err) => console.log(err));
     }
 });
