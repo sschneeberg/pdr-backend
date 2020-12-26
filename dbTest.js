@@ -52,23 +52,20 @@ const models = require('./models');
 //     });
 // });
 
+// models.Company.findOne({
+//     name: "Test Company 1",
+// }).then(company => {
 
-models.Company.findOne({
-    name: "Test Company 1",
-}).then(company => {
-    
-    
-
-    models.Company.updateOne({
-        name: company.name
-    }, {
-        $push: {"roles.dev": "testId1020202020" }
-    }).then(
-        response => {
-            console.log(response)
-        }
-    )
-    console.log("done")
-})
+//     models.Company.updateOne({
+//         name: company.name
+//     }, {
+//         $push: {"roles.dev": "testId1020202020" }
+//     }).then(
+//         response => {
+//             console.log(response)
+//         }
+//     )
+//     console.log("done")
+// })
 
 //roles.dev.$[]

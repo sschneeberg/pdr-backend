@@ -46,6 +46,7 @@ router.post('/register', (req, res) => {
     });
 });
 
+//POST api/users/register-company (Public)
 router.post('/register-company', (req, res) => {
     //modify to check for permissions so user can be both company and customer
     db.User.findOne({ email: req.body.email }).then((user) => {
@@ -185,6 +186,7 @@ router.post('/login', (req, res) => {
 
 // PUT /api/users/:id (Private) -- where id is user id
 router.put('/:id', passport.authenticate('jwt', { session: false }), (req, res) => {
+    console.log(req.body);
     //let any logged in user change their password, email or username
     if (req.body.username) {
         db.User.updateOne({ _id: req.params.id }, { $set: { username: req.body.username } })
