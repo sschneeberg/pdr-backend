@@ -11,12 +11,12 @@ const JWT_SECRET = process.env.JWT_SECRET;
 const db = require('../models');
 const { update } = require('../models/User');
 
-//GET api/users/test (Public)
+// GET api/users/test (Public)
 router.get('/test', (req, res) => {
     res.status(200).json({ msg: 'User endpoint connection' });
 });
 
-//POST api/users/register (Public)
+// POST api/users/register (Public)
 router.post('/register', (req, res) => {
     //modify to check for permissions so user can be both company and customer
     db.User.findOne({ email: req.body.email }).then((user) => {
@@ -46,7 +46,7 @@ router.post('/register', (req, res) => {
     });
 });
 
-//POST api/users/register-company (Public)
+// POST api/users/register-company (Public)
 router.post('/register-company', (req, res) => {
     //modify to check for permissions so user can be both company and customer
     db.User.findOne({ email: req.body.email }).then((user) => {
@@ -145,7 +145,7 @@ router.post('/register-company', (req, res) => {
     });
 });
 
-//POST api/users/login (Public)
+// POST api/users/login (Public)
 router.post('/login', (req, res) => {
     const email = req.body.email;
     const password = req.body.password;
@@ -182,6 +182,19 @@ router.post('/login', (req, res) => {
             }
         })
         .catch((err) => res.json({ msg: err }));
+});
+
+// GET api/users/:id (Private)
+router.get('/:id', passport.authenticate('jwt', { session: false }), (req, res) => {
+    db.User.findOne({ _id: req.params.id }).then((user) => {
+        res.status(200).json({
+            user: {
+                username: user.username,
+                email: user.email,
+                company: user.company
+            }
+        });
+    });
 });
 
 // PUT /api/users/:id (Private) -- where id is user id
