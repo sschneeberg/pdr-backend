@@ -163,6 +163,7 @@ router.post('/login', (req, res) => {
                             email: user.email,
                             id: user._id,
                             username: user.username,
+                            company: user.company,
                             permissions: user.permissions
                         };
                         //sign token and send
@@ -191,7 +192,8 @@ router.get('/:id', passport.authenticate('jwt', { session: false }), (req, res) 
             user: {
                 username: user.username,
                 email: user.email,
-                company: user.company
+                company: user.company,
+                id: user._id
             }
         });
     });
@@ -219,8 +221,17 @@ router.put('/:id', passport.authenticate('jwt', { session: false }), (req, res) 
         });
     }
     if (req.body.email) {
-        db.User.updateOne({ _id: req.params.id }, { $set: { email: req.body.email } })
-            .then(() => res.json({ msg: 'email updated' }))
+        //make sure no one else has this email
+        db.User.findOne({ email: req.body.email })
+            .then((user) => {
+                if (user) {
+                    res.json({ msg: 'Email in use by another account' });
+                } else {
+                    db.User.updateOne({ _id: req.params.id }, { $set: { email: req.body.email } })
+                        .then(() => res.json({ msg: 'email updated' }))
+                        .catch((err) => res.json({ msg: err }));
+                }
+            })
             .catch((err) => res.json({ msg: err }));
     }
 });
