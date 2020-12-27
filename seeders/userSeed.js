@@ -4,9 +4,9 @@ const bcrypt = require('bcryptjs');
 let testUserPassword = '';
 
 bcrypt.genSalt(10, (error1, salt) => {
-    if (error1) throw Error;
+    if (error1) console.log(error1);
     bcrypt.hash('password', salt, (error2, hash) => {
-        if (error2) throw Error;
+        if (error2) console.log(error2);
         testUserPassword = hash;
         db.User.insertMany([
             {

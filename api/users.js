@@ -28,9 +28,9 @@ router.post('/register', (req, res) => {
             });
             //salt and hash
             bcrypt.genSalt(10, (error1, salt) => {
-                if (error1) throw Error;
+                if (error1) res.json({ msg: error1 });
                 bcrypt.hash(newUser.password, salt, (error2, hash) => {
-                    if (error2) throw Error;
+                    if (error2) res.json({ msg: error2 });
                     //change password to hash before saving new user
                     newUser.password = hash;
                     newUser
@@ -65,9 +65,9 @@ router.post('/register-company', (req, res) => {
                         });
                         //salt and hash
                         bcrypt.genSalt(10, (error1, salt) => {
-                            if (error1) throw Error;
+                            if (error1) res.json({ msg: error1 });
                             bcrypt.hash(newUser.password, salt, (error2, hash) => {
-                                if (error2) throw Error;
+                                if (error2) res.json({ msg: error2 });
                                 //change password to hash before saving new user
                                 newUser.password = hash;
                                 newUser.save().then((createdUser) => {
@@ -117,9 +117,9 @@ router.post('/register-company', (req, res) => {
                         company: req.body.company
                     });
                     bcrypt.genSalt(10, (error1, salt) => {
-                        if (error1) throw Error;
+                        if (error1) res.json({ msg: error1 });
                         bcrypt.hash(newUser.password, salt, (error2, hash) => {
-                            if (error2) throw Error;
+                            if (error2) res.json({ msg: error2 });
                             //change password to hash before saving new user
                             newUser.password = hash;
                             newUser
@@ -149,7 +149,7 @@ router.post('/login', (req, res) => {
     db.User.findOne({ email })
         .then((user) => {
             if (!user) {
-                res.status(400).json({ msg: 'user not found' });
+                res.json({ msg: 'user not found' });
             } else {
                 //if user found, check password match
                 bcrypt.compare(password, user.password).then((isMatch) => {
@@ -165,17 +165,42 @@ router.post('/login', (req, res) => {
                         };
                         //sign token and send
                         jwt.sign(payload, JWT_SECRET, { expiresIn: '1h' }, (error, token) => {
-                            if (error) throw Error;
+                            if (error) console.log(error);
                             res.json({
                                 success: true,
                                 token: `Bearer ${token}`
                             });
                         });
                     } else {
-                        res.status(400).json({
+                        res.json({
                             msg: 'Login information incorrect'
                         });
                     }
+                });
+            }
+        })
+        .catch((err) => res.json({ msg: err }));
+});
+
+// POST api/users/reset (Public)
+router.post('/reset', (req, res) => {
+    const email = req.body.email;
+    const password = req.body.password;
+    db.User.findOne({ email })
+        .then((user) => {
+            if (!user) {
+                res.json({ msg: 'user not found' });
+            } else {
+                //if user found, reset password
+                bcrypt.genSalt(10, (error1, salt) => {
+                    if (error1) res.json({ msg: error1 });
+                    bcrypt.hash(password, salt, (error2, hash) => {
+                        if (error2) res.json({ msg: error2 });
+                        //update user
+                        db.User.updateOne({ email }, { $set: { password: hash } })
+                            .then(() => res.status(201).json({ msg: 'Reset' }))
+                            .catch((err) => res.json({ msg: err }));
+                    });
                 });
             }
         })
@@ -207,9 +232,9 @@ router.put('/:id', passport.authenticate('jwt', { session: false }), (req, res) 
     }
     if (req.body.password) {
         bcrypt.genSalt(10, (error1, salt) => {
-            if (error1) throw Error;
+            if (error1) res.json({ msg: error1 });
             bcrypt.hash(req.body.password, salt, (error2, hash) => {
-                if (error2) throw Error;
+                if (error2) res.json({ msg: error2 });
                 //change password to hash before saving updated password
                 db.User.updateOne({ _id: req.params.id }, { $set: { password: hash } })
                     .then(() => res.json({ msg: 'password updated' }))
