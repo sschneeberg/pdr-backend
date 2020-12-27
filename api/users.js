@@ -3,20 +3,17 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const passport = require('passport');
-const isAdmin = require('../middleware/isAdmin');
-
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET;
 //models
 const db = require('../models');
-const { update } = require('../models/User');
 
-//GET api/users/test (Public)
+// GET api/users/test (Public)
 router.get('/test', (req, res) => {
     res.status(200).json({ msg: 'User endpoint connection' });
 });
 
-//POST api/users/register (Public)
+// POST api/users/register (Public)
 router.post('/register', (req, res) => {
     //modify to check for permissions so user can be both company and customer
     db.User.findOne({ email: req.body.email }).then((user) => {
@@ -31,9 +28,9 @@ router.post('/register', (req, res) => {
             });
             //salt and hash
             bcrypt.genSalt(10, (error1, salt) => {
-                if (error1) throw Error;
+                if (error1) res.json({ msg: error1 });
                 bcrypt.hash(newUser.password, salt, (error2, hash) => {
-                    if (error2) throw Error;
+                    if (error2) res.json({ msg: error2 });
                     //change password to hash before saving new user
                     newUser.password = hash;
                     newUser
@@ -46,6 +43,7 @@ router.post('/register', (req, res) => {
     });
 });
 
+// POST api/users/register-company (Public)
 router.post('/register-company', (req, res) => {
     //modify to check for permissions so user can be both company and customer
     db.User.findOne({ email: req.body.email }).then((user) => {
@@ -67,9 +65,9 @@ router.post('/register-company', (req, res) => {
                         });
                         //salt and hash
                         bcrypt.genSalt(10, (error1, salt) => {
-                            if (error1) throw Error;
+                            if (error1) res.json({ msg: error1 });
                             bcrypt.hash(newUser.password, salt, (error2, hash) => {
-                                if (error2) throw Error;
+                                if (error2) res.json({ msg: error2 });
                                 //change password to hash before saving new user
                                 newUser.password = hash;
                                 newUser.save().then((createdUser) => {
@@ -119,9 +117,9 @@ router.post('/register-company', (req, res) => {
                         company: req.body.company
                     });
                     bcrypt.genSalt(10, (error1, salt) => {
-                        if (error1) throw Error;
+                        if (error1) res.json({ msg: error1 });
                         bcrypt.hash(newUser.password, salt, (error2, hash) => {
-                            if (error2) throw Error;
+                            if (error2) res.json({ msg: error2 });
                             //change password to hash before saving new user
                             newUser.password = hash;
                             newUser
@@ -144,14 +142,14 @@ router.post('/register-company', (req, res) => {
     });
 });
 
-//POST api/users/login (Public)
+// POST api/users/login (Public)
 router.post('/login', (req, res) => {
     const email = req.body.email;
     const password = req.body.password;
     db.User.findOne({ email })
         .then((user) => {
             if (!user) {
-                res.status(400).json({ msg: 'user not found' });
+                res.json({ msg: 'user not found' });
             } else {
                 //if user found, check password match
                 bcrypt.compare(password, user.password).then((isMatch) => {
@@ -162,18 +160,19 @@ router.post('/login', (req, res) => {
                             email: user.email,
                             id: user._id,
                             username: user.username,
+                            company: user.company,
                             permissions: user.permissions
                         };
                         //sign token and send
                         jwt.sign(payload, JWT_SECRET, { expiresIn: '1h' }, (error, token) => {
-                            if (error) throw Error;
+                            if (error) console.log(error);
                             res.json({
                                 success: true,
                                 token: `Bearer ${token}`
                             });
                         });
                     } else {
-                        res.status(400).json({
+                        res.json({
                             msg: 'Login information incorrect'
                         });
                     }
@@ -181,6 +180,46 @@ router.post('/login', (req, res) => {
             }
         })
         .catch((err) => res.json({ msg: err }));
+});
+
+// POST api/users/reset (Public)
+router.post('/reset', (req, res) => {
+    const email = req.body.email;
+    const password = req.body.password;
+    db.User.findOne({ email })
+        .then((user) => {
+            if (!user) {
+                res.json({ msg: 'user not found' });
+            } else {
+                //if user found, reset password
+                bcrypt.genSalt(10, (error1, salt) => {
+                    if (error1) res.json({ msg: error1 });
+                    bcrypt.hash(password, salt, (error2, hash) => {
+                        if (error2) res.json({ msg: error2 });
+                        //update user
+                        db.User.updateOne({ email }, { $set: { password: hash } })
+                            .then(() => res.status(201).json({ msg: 'Reset' }))
+                            .catch((err) => res.json({ msg: err }));
+                    });
+                });
+            }
+        })
+        .catch((err) => res.json({ msg: err }));
+});
+
+// GET api/users/:id (Private)
+router.get('/:id', passport.authenticate('jwt', { session: false }), (req, res) => {
+    db.User.findOne({ _id: req.params.id }).then((user) => {
+        res.status(200).json({
+            user: {
+                username: user.username,
+                email: user.email,
+                company: user.company,
+                id: user._id,
+                permissions: user.permissions
+            }
+        });
+    });
 });
 
 // PUT /api/users/:id (Private) -- where id is user id
@@ -193,9 +232,9 @@ router.put('/:id', passport.authenticate('jwt', { session: false }), (req, res) 
     }
     if (req.body.password) {
         bcrypt.genSalt(10, (error1, salt) => {
-            if (error1) throw Error;
+            if (error1) res.json({ msg: error1 });
             bcrypt.hash(req.body.password, salt, (error2, hash) => {
-                if (error2) throw Error;
+                if (error2) res.json({ msg: error2 });
                 //change password to hash before saving updated password
                 db.User.updateOne({ _id: req.params.id }, { $set: { password: hash } })
                     .then(() => res.json({ msg: 'password updated' }))
@@ -204,20 +243,24 @@ router.put('/:id', passport.authenticate('jwt', { session: false }), (req, res) 
         });
     }
     if (req.body.email) {
-        db.User.updateOne({ _id: req.params.id }, { $set: { email: req.body.email } })
-            .then(() => res.json({ msg: 'email updated' }))
+        //make sure no one else has this email
+        db.User.findOne({ email: req.body.email })
+            .then((user) => {
+                if (user) {
+                    res.json({ msg: 'Email in use by another account' });
+                } else {
+                    db.User.updateOne({ _id: req.params.id }, { $set: { email: req.body.email } })
+                        .then(() => res.json({ msg: 'email updated' }))
+                        .catch((err) => res.json({ msg: err }));
+                }
+            })
             .catch((err) => res.json({ msg: err }));
     }
 });
 
 // PUT /api/users/permissions/:id -- where id is user id
-router.put(
-    '/permissions/:id',
-    function (req, res, next) {
-        passport.authenticate('jwt', { session: false });
-        isAdmin(req, res, next);
-    },
-    (req, res) => {
+router.put('/permissions/:id', passport.authenticate('jwt', { session: false }), (req, res) => {
+    if (req.user.permissions === 'admin') {
         if (req.body.permissions === 'admin') {
             db.User.updateOne({ _id: req.params.id }, { $set: { permissions: req.body.permissions } })
                 .then(() => {
@@ -243,8 +286,10 @@ router.put(
                 })
                 .catch((err) => res.json({ msg: err }));
         }
+    } else {
+        res.json({ msg: 'You do not have the permissions to access this route' });
     }
-);
+});
 
 // DELETE api/users/:id (private) -- where id is user id
 router.delete('/:id', passport.authenticate('jwt', { session: false }), (req, res) => {
@@ -255,8 +300,9 @@ router.delete('/:id', passport.authenticate('jwt', { session: false }), (req, re
                 if (user.permissions === 'dev') {
                     db.Company.findOneAndUpdate({ name: user.company }, { $pull: { 'roles.dev': req.params.id } }).then(
                         () => {
-                            db.User.remove({ _id: req.params.id }, { justOne: true })
+                            db.User.deleteOne({ _id: req.params.id }, { justOne: true })
                                 .then(() => {
+                                    console.log('dev');
                                     res.json({ msg: 'Account deleted' });
                                 })
                                 .catch((err) => res.json({ msg: err }));
@@ -267,8 +313,9 @@ router.delete('/:id', passport.authenticate('jwt', { session: false }), (req, re
                         { name: user.company },
                         { $pull: { 'roles.admin': req.params.id } }
                     ).then(() => {
-                        db.User.remove({ _id: req.params.id }, { justOne: true })
+                        db.User.deleteOne({ _id: req.params.id }, { justOne: true })
                             .then(() => {
+                                console.log('admin');
                                 res.json({ msg: 'Account deleted' });
                             })
                             .catch((err) => res.json({ msg: err }));
@@ -276,8 +323,9 @@ router.delete('/:id', passport.authenticate('jwt', { session: false }), (req, re
                 }
             } else {
                 //just a regular user
-                db.User.remove({ _id: req.params.id }, { justOne: true })
+                db.User.deleteOne({ _id: req.params.id }, { justOne: true })
                     .then(() => {
+                        console.log('regular');
                         res.json({ msg: 'Account deleted' });
                     })
                     .catch((err) => res.json({ msg: err }));
