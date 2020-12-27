@@ -1,4 +1,5 @@
 require('dotenv').config();
+const { json } = require('express');
 const express = require('express');
 const passport = require('passport');
 const isAdmin = require('../middleware/isAdmin');
@@ -31,21 +32,22 @@ router.get(
     },
     (req, res) => {
         db.Company.findOne({
-            name: req.user.company
+            name: req.body.company
         })
             .then((company) => {
-                let companyInfo = [];
-                companyInfo.push(company);
                 db.Ticket.find({
                     company: company.name
                 })
                     .then((tickets) => {
-                        let ticketInfo = [];
-                        ticketInfo.push(tickets);
-                        res.json({
-                            companyInfo,
-                            ticketInfo
-                        });
+                        db.User.find({ company: company.name })
+                            .then((users) => {
+                                res.json({
+                                    company: company,
+                                    tickets: tickets,
+                                    users: users
+                                });
+                            })
+                            .catch((err) => res.json({ err }));
                     })
                     .catch((err) => res.json({ msg: err }));
             })

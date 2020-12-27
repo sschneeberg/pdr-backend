@@ -193,7 +193,8 @@ router.get('/:id', passport.authenticate('jwt', { session: false }), (req, res) 
                 username: user.username,
                 email: user.email,
                 company: user.company,
-                id: user._id
+                id: user._id,
+                permissions: user.permissions
             }
         });
     });
