@@ -13,6 +13,7 @@ ort: MERN Stack Bug Tracker App (Backend Repository)
 | GET    | api/dashboard                 | Private                | Get all information for customer or dev dashboard                                 |
 | GET    | api/dashboard/admin-dashboard | Private (Admin Only)   | Get all information for admin dashboard                                           |
 | GET    | api/users/:id                 | Private                | Get user information (:id is a User id)                                           |
+| GET    | api/company                   | Private (Admin Only)   | Get company key                                                                   |
 | POST   | api/users/login               | Public                 | Login a user                                                                      |
 | POST   | api/users/register            | Public                 | Create customer user account                                                      |
 | POST   | api/users/register-company    | Public                 | Create an admin or dev account with a new or existing company                     |

@@ -25,14 +25,10 @@ router.get('/', passport.authenticate('jwt', { session: false }), (req, res) => 
 });
 
 //GET api/dashboard/admin-dashboard (private admin)
-router.get(
-    '/admin-dashboard',
-    function (req, res, next) {
-        passport.authenticate('jwt', { session: false }), isAdmin(req, res, next);
-    },
-    (req, res) => {
+router.get('/admin-dashboard', passport.authenticate('jwt', { session: false }), (req, res) => {
+    if (req.user.permissions === 'admin') {
         db.Company.findOne({
-            name: req.body.company
+            name: req.user.company
         })
             .then((company) => {
                 db.Ticket.find({
@@ -52,7 +48,9 @@ router.get(
                     .catch((err) => res.json({ msg: err }));
             })
             .catch((err) => res.json({ msg: err }));
+    } else {
+        res.json({ msg: 'You do not have the permissions to access this page' });
     }
-);
+});
 
 module.exports = router;

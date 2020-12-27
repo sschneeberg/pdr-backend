@@ -6,18 +6,29 @@ const router = express.Router();
 //models
 const db = require('../models');
 
-// DELETE /api/company (private) -- where id is admin user id who is deleting company
-router.delete(
-    '/',
-    function (req, res, next) {
-        passport.authenticate('jwt', { session: false });
-        isAdmin(req, res, next);
-    },
-    (req, res) => {
+// GET /api/company (Private)
+router.get('/', passport.authenticate('jwt', { session: false }), (req, res) => {
+    if (req.user.permissions === 'admin') {
         //find the user's company
         let user = req.user;
         //delete that company
-        db.Company.remove({ name: user.company }, { justOne: true })
+        db.Company.findOne({ name: user.company })
+            .then((company) => {
+                res.status(200).json({ key: company.companyKey });
+            })
+            .catch((err) => res.json({ msg: err }));
+    } else {
+        res.json({ msg: 'You do not have the permissions to access this route.' });
+    }
+});
+
+// DELETE /api/company (private)
+router.delete('/', passport.authenticate('jwt', { session: false }), (req, res) => {
+    if (req.user.permission === 'admin') {
+        //find the user's company
+        let user = req.user;
+        //delete that company
+        db.Company.deleteOne({ name: user.company })
             .then(() => {
                 //delete all it's users
                 db.User.deleteMany({ company: user.company })
@@ -27,7 +38,9 @@ router.delete(
                     .catch((err) => res.json({ msg: err }));
             })
             .catch((err) => res.json({ msg: err }));
+    } else {
+        res.json({ msg: 'You do not have the permissions to access this route.' });
     }
-);
+});
 
 module.exports = router;

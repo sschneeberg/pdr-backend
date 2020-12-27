@@ -9,7 +9,6 @@ const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET;
 //models
 const db = require('../models');
-const { update } = require('../models/User');
 
 // GET api/users/test (Public)
 router.get('/test', (req, res) => {
@@ -202,7 +201,6 @@ router.get('/:id', passport.authenticate('jwt', { session: false }), (req, res) 
 
 // PUT /api/users/:id (Private) -- where id is user id
 router.put('/:id', passport.authenticate('jwt', { session: false }), (req, res) => {
-    console.log(req.body);
     //let any logged in user change their password, email or username
     if (req.body.username) {
         db.User.updateOne({ _id: req.params.id }, { $set: { username: req.body.username } })
@@ -238,13 +236,8 @@ router.put('/:id', passport.authenticate('jwt', { session: false }), (req, res) 
 });
 
 // PUT /api/users/permissions/:id -- where id is user id
-router.put(
-    '/permissions/:id',
-    function (req, res, next) {
-        passport.authenticate('jwt', { session: false });
-        isAdmin(req, res, next);
-    },
-    (req, res) => {
+router.put('/permissions/:id', passport.authenticate('jwt', { session: false }), (req, res) => {
+    if (req.user.permissions === 'admin') {
         if (req.body.permissions === 'admin') {
             db.User.updateOne({ _id: req.params.id }, { $set: { permissions: req.body.permissions } })
                 .then(() => {
@@ -270,8 +263,10 @@ router.put(
                 })
                 .catch((err) => res.json({ msg: err }));
         }
+    } else {
+        res.json({ msg: 'You do not have the permissions to access this route' });
     }
-);
+});
 
 // DELETE api/users/:id (private) -- where id is user id
 router.delete('/:id', passport.authenticate('jwt', { session: false }), (req, res) => {
@@ -282,8 +277,9 @@ router.delete('/:id', passport.authenticate('jwt', { session: false }), (req, re
                 if (user.permissions === 'dev') {
                     db.Company.findOneAndUpdate({ name: user.company }, { $pull: { 'roles.dev': req.params.id } }).then(
                         () => {
-                            db.User.remove({ _id: req.params.id }, { justOne: true })
+                            db.User.deleteOne({ _id: req.params.id }, { justOne: true })
                                 .then(() => {
+                                    console.log('dev');
                                     res.json({ msg: 'Account deleted' });
                                 })
                                 .catch((err) => res.json({ msg: err }));
@@ -294,8 +290,9 @@ router.delete('/:id', passport.authenticate('jwt', { session: false }), (req, re
                         { name: user.company },
                         { $pull: { 'roles.admin': req.params.id } }
                     ).then(() => {
-                        db.User.remove({ _id: req.params.id }, { justOne: true })
+                        db.User.deleteOne({ _id: req.params.id }, { justOne: true })
                             .then(() => {
+                                console.log('admin');
                                 res.json({ msg: 'Account deleted' });
                             })
                             .catch((err) => res.json({ msg: err }));
@@ -303,8 +300,9 @@ router.delete('/:id', passport.authenticate('jwt', { session: false }), (req, re
                 }
             } else {
                 //just a regular user
-                db.User.remove({ _id: req.params.id }, { justOne: true })
+                db.User.deleteOne({ _id: req.params.id }, { justOne: true })
                     .then(() => {
+                        console.log('regular');
                         res.json({ msg: 'Account deleted' });
                     })
                     .catch((err) => res.json({ msg: err }));
