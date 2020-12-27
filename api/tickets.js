@@ -1,12 +1,7 @@
 require('dotenv').config();
 const express = require('express');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 const passport = require('passport');
-const isDev = require('../middleware/isDev');
-
 const router = express.Router();
-const JWT_SECRET = process.env.JWT_SECRET;
 //models
 const db = require('../models');
 
@@ -70,30 +65,21 @@ router.post('/:id/comments', passport.authenticate('jwt', { session: false }), (
 });
 
 // DELETE /api/tickets/:id/comments (Private) -- where id is comment id
-router.delete(
-    '/:id/comments',
-    function (req, res, next) {
-        passport.authenticate('jwt', { session: false });
-        isAdmin(req, res, next);
-    },
-    (req, res) => {
+router.delete('/:id/comments', passport.authenticate('jwt', { session: false }), (req, res) => {
+    if (req.user.permissions == 'admin') {
         db.Comment.remove({ _id: req.params.id }, { justOne: true })
             .then(() => {
                 res.json({ msg: 'comment deleted' });
             })
             .catch((err) => res.json({ msg: err }));
+    } else {
+        res.json({ msg: 'You do not have the permissions to access this route' });
     }
-);
+});
 
 // GET /api/ticket/:id (Private) -- where id is ticekt id
-router.get(
-    '/:id',
-    function (req, res, next) {
-        passport.authenticate('jwt', { session: false });
-        isDev(req, res, next);
-    },
-    (req, res) => {
-        //will find tickets for both users and devs
+router.get('/:id', passport.authenticate('jwt', { session: false }), (req, res) => {
+    if (req.user.permissions === 'dev' || req.user.permissions === 'admin') {
         db.Ticket.findOne({ _id: req.params.id })
             .then((ticket) => {
                 //find the assocaited usernames
@@ -108,8 +94,10 @@ router.get(
                     .catch((err) => res.json({ msg: err }));
             })
             .catch((err) => res.json({ msg: err }));
+    } else {
+        res.json({ msg: 'You do not have the permissions to access this page' });
     }
-);
+});
 
 // PUT /api/tickets/:id (Private) -- where id is ticket id
 router.put('/:id', passport.authenticate('jwt', { session: false }), (req, res) => {

@@ -2,7 +2,6 @@ require('dotenv').config();
 const { json } = require('express');
 const express = require('express');
 const passport = require('passport');
-const isAdmin = require('../middleware/isAdmin');
 const router = express.Router();
 //models
 const db = require('../models');
