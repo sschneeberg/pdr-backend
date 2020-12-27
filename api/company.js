@@ -24,7 +24,7 @@ router.get('/', passport.authenticate('jwt', { session: false }), (req, res) => 
 
 // DELETE /api/company (private)
 router.delete('/', passport.authenticate('jwt', { session: false }), (req, res) => {
-    if (req.user.permission === 'admin') {
+    if (req.user.permissions === 'admin') {
         //find the user's company
         let user = req.user;
         //delete that company
