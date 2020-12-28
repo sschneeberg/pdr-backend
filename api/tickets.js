@@ -112,7 +112,7 @@ router.put('/:id', passport.authenticate('jwt', { session: false }), (req, res) 
         )
             .then(() => res.json({ msg: 'updated' }))
             .catch((err) => res.json({ msg: err }));
-    } else if (req.body.permissions === 'dev' || req.body.permissions === 'admin') {
+    } else if (req.user.permissions === 'dev' || req.user.permissions === 'admin') {
         //if dev or admin allow status change -- add closeAt when closed
         let closedDate = '';
         if (req.body.status === 3) {
