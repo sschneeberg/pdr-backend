@@ -3,8 +3,12 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const passport = require('passport');
+const socketio = require('socket.io');
 
 const app = express();
+const httpServer = require('http').createServer(app);
+const io = socketio(httpServer, { cors: { origin: '*' } });
+
 const port = process.env.PORT || 8000;
 
 //middleware
