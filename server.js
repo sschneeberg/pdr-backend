@@ -28,5 +28,11 @@ app.use('/api/users', require('./api/users'));
 app.use('/api/tickets', require('./api/tickets'));
 app.use('/api/dashboard', require('./api/dashboard'));
 app.use('/api/company', require('./api/company'));
+//app.use('/api/chat', require('./api/chat'));
 
-app.listen(port, console.log(`listening on port ${port}`));
+//chat - move to own file once working
+io.on('connection', (client) => {
+    console.log('connected');
+});
+
+httpServer.listen(port, console.log(`listening on port ${port}`));
