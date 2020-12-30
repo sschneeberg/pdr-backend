@@ -8,6 +8,7 @@ const socketio = require('socket.io');
 const app = express();
 const httpServer = require('http').createServer(app);
 const io = socketio(httpServer, { cors: { origin: '*' } });
+const chatRooms = require('./api/middleware/chatRooms');
 
 const port = process.env.PORT || 8000;
 
@@ -31,15 +32,25 @@ app.use('/api/company', require('./api/company'));
 
 //chat
 io.on('connection', (client) => {
+    console.log('connect');
     let room = '';
-    console.log('connected');
-    client.on('join-company', (company, id) => {
-        console.log('company joined: ', company, id);
+    let permissions = '';
+    client.on('join-company', (company, id, permissions) => {
         room = company;
+        if (permissions === 'dev' || permissions === 'admin') {
+            chatRooms[room] ? chatRooms[room]++ : (chatRooms[room] = 1);
+        }
         client.join(room);
+        client.emit('joined-room', chatRooms[room]);
     });
     client.on('send-message', (msg) => {
         client.to(room).emit('sent-message', msg);
+    });
+    client.on('disconnecting', () => {
+        console.log('disconnecting');
+        if (permissions === 'dev' || permissions === 'admin') {
+            chatRooms[room] ? chatRooms[room]-- : delete chatRooms[room];
+        }
     });
 });
 
