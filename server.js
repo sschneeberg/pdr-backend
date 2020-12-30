@@ -28,9 +28,8 @@ app.use('/api/users', require('./api/users'));
 app.use('/api/tickets', require('./api/tickets'));
 app.use('/api/dashboard', require('./api/dashboard'));
 app.use('/api/company', require('./api/company'));
-//app.use('/api/chat', require('./api/chat'));
 
-//chat - move to own file once working
+//chat
 io.on('connection', (client) => {
     let room = '';
     console.log('connected');
