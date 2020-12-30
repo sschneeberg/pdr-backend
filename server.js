@@ -32,7 +32,16 @@ app.use('/api/company', require('./api/company'));
 
 //chat - move to own file once working
 io.on('connection', (client) => {
+    let room = '';
     console.log('connected');
+    client.on('join-company', (company, id) => {
+        console.log('company joined: ', company, id);
+        room = company;
+        client.join(room);
+    });
+    client.on('send-message', (msg) => {
+        client.to(room).emit('sent-message', msg);
+    });
 });
 
 httpServer.listen(port, console.log(`listening on port ${port}`));
