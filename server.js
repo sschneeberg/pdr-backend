@@ -34,23 +34,46 @@ app.use('/api/company', require('./api/company'));
 io.on('connection', (client) => {
     console.log('connect');
     let room = '';
-    let permissions = '';
-    client.on('join-company', (company, id, permissions) => {
+    client.on('join-company', (company, permissions) => {
+        //company channel: should be admins and devs only
         room = company;
         if (permissions === 'dev' || permissions === 'admin') {
-            chatRooms[room] ? chatRooms[room]++ : (chatRooms[room] = 1);
+            client.join(company);
         }
-        client.join(room);
-        client.emit('joined-room', chatRooms[room]);
     });
-    client.on('send-message', (msg) => {
-        client.to(room).emit('sent-message', msg);
-    });
-    client.on('disconnecting', () => {
-        console.log('disconnecting');
+    client.on('support-available', (company, id, permissions) => {
         if (permissions === 'dev' || permissions === 'admin') {
-            chatRooms[room] ? chatRooms[room]-- : delete chatRooms[room];
+            //record connection in company rooms map
+            chatRooms[company]
+                ? chatRooms[company].push({ socektId: id, chats: 0 })
+                : (chatRooms[company] = [{ socketId: id, chats: 0 }]);
         }
+    });
+    client.on('company-connect', (company) => {
+        //customer reaches out to company
+        let socket = '';
+        if (chatRooms[company]) {
+            //assign a support member to the customer
+            //LATER: make this a better algorithm to ensure no one rep gets overwhelmed
+            let index = Math.floor(Math.random() * chatRooms[comapny].length);
+            socket = chatRooms[company][index].socketId;
+            chatRooms[company][index].chats += 1;
+        }
+        client.emit('company-connected', chatRooms[room].length, socket);
+    });
+
+    client.on('send-message', (msg, supportSocket, customerSocket) => {
+        if (!supportSocket) {
+            //this is a company chat message
+            client.to(room).emit('sent-company-message', msg);
+        } else {
+            //this is a customer to support message
+            client.to(supportSocket).emit('sent-customer-message', msg, customerSocket);
+        }
+    });
+    client.on('send-support-message', (msg, customerSocket) => {
+        //this is a support to customer message
+        client.to(customerSocket).emit('sent-support-message', msg);
     });
 });
 
