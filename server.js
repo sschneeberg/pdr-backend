@@ -47,6 +47,16 @@ io.on('connection', (client) => {
             chatRooms[company]
                 ? chatRooms[company].push({ socektId: id, chats: 0 })
                 : (chatRooms[company] = [{ socketId: id, chats: 0 }]);
+            console.log(chatRooms[company]);
+        }
+    });
+    client.on('support-unavailable', (company, id, permissions) => {
+        if (permissions === 'dev' || permissions === 'admin') {
+            //remove connection from company rooms map
+            chatRooms[company] = chatRooms[company].filter((member) => {
+                return member.socketId !== id;
+            });
+            console.log(chatRooms[company]);
         }
     });
     client.on('company-connect', (company) => {
@@ -55,11 +65,13 @@ io.on('connection', (client) => {
         if (chatRooms[company]) {
             //assign a support member to the customer
             //LATER: make this a better algorithm to ensure no one rep gets overwhelmed
-            let index = Math.floor(Math.random() * chatRooms[comapny].length);
+            let index = Math.floor(Math.random() * chatRooms[company].length);
             socket = chatRooms[company][index].socketId;
             chatRooms[company][index].chats += 1;
+            client.emit('company-connected', chatRooms[company].length, socket);
+        } else {
+            client.emit('company-connected', 0, socket);
         }
-        client.emit('company-connected', chatRooms[room].length, socket);
     });
 
     client.on('send-message', (msg, supportSocket, customerSocket) => {
