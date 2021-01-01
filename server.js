@@ -74,13 +74,13 @@ io.on('connection', (client) => {
         }
     });
 
-    client.on('send-message', (msg, supportSocket, customerSocket) => {
+    client.on('send-message', (msg, supportSocket, customerSocket, username) => {
         if (!supportSocket) {
             //this is a company chat message
             client.to(room).emit('sent-company-message', msg);
         } else {
             //this is a customer to support message
-            client.to(supportSocket).emit('sent-customer-message', msg, customerSocket);
+            client.to(supportSocket).emit('sent-customer-message', msg, customerSocket, username);
         }
     });
     client.on('send-support-message', (msg, customerSocket) => {
