@@ -87,6 +87,9 @@ io.on('connection', (client) => {
         //this is a support to customer message
         client.to(customerSocket).emit('sent-support-message', msg);
     });
+    client.on('end-chat', (customerSocket) => {
+        client.to(customerSocket).emit('chat-closed');
+    });
 });
 
 httpServer.listen(port, console.log(`listening on port ${port}`));
