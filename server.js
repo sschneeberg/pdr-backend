@@ -44,30 +44,28 @@ io.on('connection', (client) => {
     client.on('support-available', (company, id, permissions) => {
         if (permissions === 'dev' || permissions === 'admin') {
             //record connection in company rooms map
-            chatRooms[company]
-                ? chatRooms[company].push({ socektId: id, chats: 0 })
-                : (chatRooms[company] = [{ socketId: id, chats: 0 }]);
-            console.log(chatRooms[company]);
+            chatRooms[company] ? chatRooms[company].push(id) : (chatRooms[company] = [id]);
         }
     });
     client.on('support-unavailable', (company, id, permissions) => {
         if (permissions === 'dev' || permissions === 'admin') {
             //remove connection from company rooms map
             chatRooms[company] = chatRooms[company].filter((member) => {
-                return member.socketId !== id;
+                return member !== id;
             });
-            console.log(chatRooms[company]);
         }
     });
     client.on('company-connect', (company) => {
         //customer reaches out to company
         let socket = '';
-        if (chatRooms[company]) {
+        console.log('ROOM', chatRooms[company]);
+        if (chatRooms[company] && chatRooms[company].length > 0) {
             //assign a support member to the customer
             //LATER: make this a better algorithm to ensure no one rep gets overwhelmed
             let index = Math.floor(Math.random() * chatRooms[company].length);
-            socket = chatRooms[company][index].socketId;
-            chatRooms[company][index].chats += 1;
+            console.log('SOCKET', chatRooms[company][index]);
+            socket = chatRooms[company][index];
+            console.log(socket);
             client.emit('company-connected', chatRooms[company].length, socket);
         } else {
             client.emit('company-connected', 0, socket);
@@ -75,11 +73,13 @@ io.on('connection', (client) => {
     });
 
     client.on('send-message', (msg, supportSocket, customerSocket, username) => {
+        console.log(supportSocket);
         if (!supportSocket) {
             //this is a company chat message
             client.to(room).emit('sent-company-message', msg);
         } else {
             //this is a customer to support message
+            console.log('message sent');
             client.to(supportSocket).emit('sent-customer-message', msg, customerSocket, username);
         }
     });
