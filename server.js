@@ -49,17 +49,17 @@ io.on('connection', (client) => {
         }
     });
 
-
-    client.on("statusUpdated", (info) => {
+    client.on('statusUpdated', (info) => {
         //listens for status update from devHome and transmits the message to userHome
-        client.broadcast.emit("statusUpdated", info)
+        console.log('STATUS UPDATE');
+        client.broadcast.emit('statusUpdate', info);
     });
 
     client.on('disconnecting', () => {
         console.log('disconnecting');
+    });
 
     client.on('support-unavailable', (company, id, permissions) => {
-
         if (permissions === 'dev' || permissions === 'admin') {
             //remove connection from company rooms map
             chatRooms[company] = chatRooms[company].filter((member) => {
