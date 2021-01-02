@@ -37,6 +37,7 @@ io.on('connection', (client) => {
     client.on('join-company', (company, permissions) => {
         //company channel: should be admins and devs only
         room = company;
+        console.log('ROOM', room);
         if (permissions === 'dev' || permissions === 'admin') {
             client.join(company);
         }
@@ -58,7 +59,6 @@ io.on('connection', (client) => {
     client.on('company-connect', (company) => {
         //customer reaches out to company
         let socket = '';
-        console.log('ROOM', chatRooms[company]);
         if (chatRooms[company] && chatRooms[company].length > 0) {
             //assign a support member to the customer
             //LATER: make this a better algorithm to ensure no one rep gets overwhelmed
@@ -76,11 +76,12 @@ io.on('connection', (client) => {
         console.log(supportSocket);
         if (!supportSocket) {
             //this is a company chat message
+            console.log('sent');
             client.to(room).emit('sent-company-message', msg);
         } else {
             //this is a customer to support message
             console.log('message sent');
-            client.to(supportSocket).emit('sent-customer-message', msg, customerSocket, username);
+            client.to(supportSocket).emit('sent-customer-message', msg.text, customerSocket, username);
         }
     });
     client.on('send-support-message', (msg, customerSocket) => {
