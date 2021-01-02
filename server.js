@@ -34,18 +34,21 @@ app.use('/api/company', require('./api/company'));
 io.on('connection', (client) => {
     console.log('connect');
     let room = '';
-    let permissions = '';
-    client.on('join-company', (company, id, permissions) => {
+    client.on('join-company', (company, permissions) => {
+        //company channel: should be admins and devs only
         room = company;
+        console.log('ROOM', room);
         if (permissions === 'dev' || permissions === 'admin') {
-            chatRooms[room] ? chatRooms[room]++ : (chatRooms[room] = 1);
+            client.join(company);
         }
-        client.join(room);
-        client.emit('joined-room', chatRooms[room]);
     });
-    client.on('send-message', (msg) => {
-        client.to(room).emit('sent-message', msg);
+    client.on('support-available', (company, id, permissions) => {
+        if (permissions === 'dev' || permissions === 'admin') {
+            //record connection in company rooms map
+            chatRooms[company] ? chatRooms[company].push(id) : (chatRooms[company] = [id]);
+        }
     });
+
 
     client.on("statusUpdated", (info) => {
         //listens for status update from devHome and transmits the message to userHome
@@ -54,9 +57,50 @@ io.on('connection', (client) => {
 
     client.on('disconnecting', () => {
         console.log('disconnecting');
+
+    client.on('support-unavailable', (company, id, permissions) => {
+
         if (permissions === 'dev' || permissions === 'admin') {
-            chatRooms[room] ? chatRooms[room]-- : delete chatRooms[room];
+            //remove connection from company rooms map
+            chatRooms[company] = chatRooms[company].filter((member) => {
+                return member !== id;
+            });
         }
+    });
+    client.on('company-connect', (company) => {
+        //customer reaches out to company
+        let socket = '';
+        if (chatRooms[company] && chatRooms[company].length > 0) {
+            //assign a support member to the customer
+            //LATER: make this a better algorithm to ensure no one rep gets overwhelmed
+            let index = Math.floor(Math.random() * chatRooms[company].length);
+            console.log('SOCKET', chatRooms[company][index]);
+            socket = chatRooms[company][index];
+            console.log(socket);
+            client.emit('company-connected', chatRooms[company].length, socket);
+        } else {
+            client.emit('company-connected', 0, socket);
+        }
+    });
+
+    client.on('send-message', (msg, supportSocket, customerSocket, username) => {
+        console.log(supportSocket);
+        if (!supportSocket) {
+            //this is a company chat message
+            console.log('sent');
+            client.to(room).emit('sent-company-message', msg);
+        } else {
+            //this is a customer to support message
+            console.log('message sent');
+            client.to(supportSocket).emit('sent-customer-message', msg.text, customerSocket, username);
+        }
+    });
+    client.on('send-support-message', (msg, customerSocket) => {
+        //this is a support to customer message
+        client.to(customerSocket).emit('sent-support-message', msg);
+    });
+    client.on('end-chat', (customerSocket) => {
+        client.to(customerSocket).emit('chat-closed');
     });
 });
 
