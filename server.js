@@ -32,7 +32,7 @@ app.use('/api/company', require('./api/company'));
 
 //chat
 io.on('connection', (client) => {
-    console.log('connect');
+    console.log('connect', client.id);
     let room = '';
     client.on('join-company', (company, permissions) => {
         //company channel: should be admins and devs only
