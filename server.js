@@ -48,8 +48,9 @@ io.on('connection', (client) => {
     });
 
     client.on("statusUpdated", (info) => {
+        //listens for status update from devHome and transmits the message to userHome
         client.broadcast.emit("statusUpdated", info)
-    })
+    });
 
     client.on('disconnecting', () => {
         console.log('disconnecting');
