@@ -46,6 +46,11 @@ io.on('connection', (client) => {
     client.on('send-message', (msg) => {
         client.to(room).emit('sent-message', msg);
     });
+
+    client.on("statusUpdated", (info) => {
+        client.broadcast.emit("statusUpdated", info)
+    })
+
     client.on('disconnecting', () => {
         console.log('disconnecting');
         if (permissions === 'dev' || permissions === 'admin') {
