@@ -1,4 +1,5 @@
 require('dotenv').config();
+const { response } = require('express');
 const express = require('express');
 const passport = require('passport');
 const router = express.Router();
@@ -77,7 +78,21 @@ router.delete('/:id/comments', passport.authenticate('jwt', { session: false }),
     }
 });
 
-// GET /api/ticket/:id (Private) -- where id is ticekt id
+// GET /api/tickets/search (Private)
+router.get('/search', passport.authenticate('jwt', { session: false }), (req, res) => {
+    if (req.user.permissions === 'dev' || req.user.permissions === 'admin') {
+        console.log('here');
+        db.Ticket.find({ company: req.user.company })
+            .then((tickets) => {
+                res.status(200).json({ tickets });
+            })
+            .catch((err) => res.json({ msg: err }));
+    } else {
+        res.json({ msg: 'You do not have the permissions to access this page' });
+    }
+});
+
+// GET /api/tickets/:id (Private) -- where id is ticekt id
 router.get('/:id', passport.authenticate('jwt', { session: false }), (req, res) => {
     if (req.user.permissions === 'dev' || req.user.permissions === 'admin') {
         db.Ticket.findOne({ _id: req.params.id })
