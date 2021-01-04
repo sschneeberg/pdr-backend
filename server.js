@@ -56,7 +56,7 @@ io.on('connection', (client) => {
     });
 
     client.on('disconnecting', () => {
-        console.log('disconnecting');
+        console.log('disconnecting');})
 
     client.on('support-unavailable', (company, id, permissions) => {
 
