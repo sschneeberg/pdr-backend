@@ -48,9 +48,9 @@ io.on('connection', (client) => {
         }
     });
 
-    client.on("statusUpdated", (info) => {
+    client.on('statusUpdated', (info) => {
         //listens for status update from devHome and transmits the message to userHome
-        client.broadcast.emit("statusUpdate", info)
+        client.broadcast.emit('statusUpdate', info);
     });
 
     client.on('disconnecting', () => {
@@ -65,7 +65,7 @@ io.on('connection', (client) => {
             });
         }
     });
-  
+
     client.on('company-connect', (company) => {
         //customer reaches out to company
         let socket = '';
@@ -94,12 +94,12 @@ io.on('connection', (client) => {
             client.to(supportSocket).emit('sent-customer-message', msg.text, customerSocket, username);
         }
     });
-  
+
     client.on('send-support-message', (msg, customerSocket) => {
         //this is a support to customer message
         client.to(customerSocket).emit('sent-support-message', msg);
     });
-  
+
     client.on('end-chat', (customerSocket) => {
         client.to(customerSocket).emit('chat-closed');
     });
