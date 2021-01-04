@@ -32,7 +32,6 @@ app.use('/api/company', require('./api/company'));
 
 //chat
 io.on('connection', (client) => {
-    console.log('connect' + client.id);
     let room = '';
     client.on('join-company', (company, permissions) => {
         //company channel: should be admins and devs only
@@ -49,19 +48,16 @@ io.on('connection', (client) => {
         }
     });
 
-
     client.on("statusUpdated", (info) => {
-        console.log("STATUS UPDATED IN SERVER.JS")
         //listens for status update from devHome and transmits the message to userHome
         client.broadcast.emit("statusUpdate", info)
     });
 
     client.on('disconnecting', () => {
         console.log('disconnecting');
-    })
+    });
 
     client.on('support-unavailable', (company, id, permissions) => {
-
         if (permissions === 'dev' || permissions === 'admin') {
             //remove connection from company rooms map
             chatRooms[company] = chatRooms[company].filter((member) => {
@@ -69,6 +65,7 @@ io.on('connection', (client) => {
             });
         }
     });
+  
     client.on('company-connect', (company) => {
         //customer reaches out to company
         let socket = '';
@@ -97,10 +94,12 @@ io.on('connection', (client) => {
             client.to(supportSocket).emit('sent-customer-message', msg.text, customerSocket, username);
         }
     });
+  
     client.on('send-support-message', (msg, customerSocket) => {
         //this is a support to customer message
         client.to(customerSocket).emit('sent-support-message', msg);
     });
+  
     client.on('end-chat', (customerSocket) => {
         client.to(customerSocket).emit('chat-closed');
     });
