@@ -19,7 +19,7 @@ router.post('/register', (req, res) => {
     db.User.findOne({ email: req.body.email }).then((user) => {
         if (user) {
             //already have this user, they cannot register again
-            res.status(400).json({ msg: 'Email already exsists' });
+            res.json({ msg: 'Email already exsists' });
         } else {
             const newUser = new db.User({
                 username: req.body.username,
@@ -49,7 +49,7 @@ router.post('/register-company', (req, res) => {
     db.User.findOne({ email: req.body.email }).then((user) => {
         if (user) {
             //already have this user, they cannot register again
-            res.status(400).json({ msg: 'Email already exsists' });
+            res.json({ msg: 'Email already exsists' });
         } else {
             db.Company.findOne({
                 name: req.body.company
@@ -106,7 +106,7 @@ router.post('/register-company', (req, res) => {
                             });
                         });
                     } else {
-                        res.status(400).json({ msg: 'Keys do not match our records' });
+                        res.json({ msg: 'Keys do not match our records' });
                     }
                 } else {
                     const newUser = new db.User({
