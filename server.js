@@ -32,7 +32,7 @@ app.use('/api/company', require('./api/company'));
 
 //chat
 io.on('connection', (client) => {
-    console.log('connect');
+    console.log('connect' + client.id);
     let room = '';
     client.on('join-company', (company, permissions) => {
         //company channel: should be admins and devs only
@@ -51,12 +51,14 @@ io.on('connection', (client) => {
 
 
     client.on("statusUpdated", (info) => {
+        console.log("STATUS UPDATED IN SERVER.JS")
         //listens for status update from devHome and transmits the message to userHome
-        client.broadcast.emit("statusUpdated", info)
+        client.broadcast.emit("statusUpdate", info)
     });
 
     client.on('disconnecting', () => {
         console.log('disconnecting');
+    })
 
     client.on('support-unavailable', (company, id, permissions) => {
 
