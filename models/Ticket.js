@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 const ticketSchema = new Schema({
     title: {
         type: String,
-        maxLength: [20]
+        maxLength: [30]
     },
     assignedTo: [{ type: String }],
     company: { type: String },

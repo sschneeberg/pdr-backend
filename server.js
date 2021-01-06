@@ -32,6 +32,7 @@ app.use('/api/company', require('./api/company'));
 
 //chat
 io.on('connection', (client) => {
+    console.log('connect', client.id);
     let room = '';
     client.on('join-company', (company, permissions) => {
         //company channel: should be admins and devs only
@@ -65,7 +66,6 @@ io.on('connection', (client) => {
             });
         }
     });
-
     client.on('company-connect', (company) => {
         //customer reaches out to company
         let socket = '';
@@ -94,12 +94,10 @@ io.on('connection', (client) => {
             client.to(supportSocket).emit('sent-customer-message', msg.text, customerSocket, username);
         }
     });
-
     client.on('send-support-message', (msg, customerSocket) => {
         //this is a support to customer message
         client.to(customerSocket).emit('sent-support-message', msg);
     });
-
     client.on('end-chat', (customerSocket) => {
         client.to(customerSocket).emit('chat-closed');
     });
