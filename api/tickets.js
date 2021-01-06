@@ -116,7 +116,7 @@ router.get('/:id', passport.authenticate('jwt', { session: false }), (req, res) 
 
 // PUT /api/tickets/:id (Private) -- where id is ticket id
 router.put('/:id', passport.authenticate('jwt', { session: false }), (req, res) => {
-    if (req.user.permissions === 'admin') {
+    if (req.user.permissions === 'admin' && req.body.priority) {
         //if admin allow assignTo and proirity edits
         db.Ticket.updateOne(
             { _id: req.params.id },

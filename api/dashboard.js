@@ -12,15 +12,13 @@ router.get('/test', (req, res) => {
 
 //GET api/dashboard (private)
 router.get('/', passport.authenticate('jwt', { session: false }), (req, res) => {
-    if (req.user.permissions !== 'admin') {
-        db.Ticket.find({
-            $or: [{ createdBy: req.user.id }, { assignedTo: req.user.id }]
+    db.Ticket.find({
+        $or: [{ createdBy: req.user.id }, { assignedTo: req.user.id }]
+    })
+        .then((tickets) => {
+            res.status(200).json({ tickets });
         })
-            .then((tickets) => {
-                res.status(200).json({ tickets });
-            })
-            .catch((err) => res.json({ msg: err }));
-    }
+        .catch((err) => res.json({ msg: err }));
 });
 
 //GET api/dashboard/admin-dashboard (private admin)
