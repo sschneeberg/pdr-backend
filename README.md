@@ -1,7 +1,8 @@
 # pdr-backend
 
-Pest Damage Repcode .
-ort: MERN Stack Bug Tracker App (Backend Repository)
+Pest Damage Report: MERN Stack Bug Tracker App (Backend Repository)
+
+[Front End Repo](https://github.com/sschneeberg/pdr-frontend)
 
 ## ROUTES
 
